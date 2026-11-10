@@ -1,0 +1,1462 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<style>body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+</head>
+<body>
+<title>Thrandir Morviil</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Marcellus+SC&family=Alegreya+Sans:ital,wght@0,400;0,500;0,700;1,400&family=JetBrains+Mono:wght@400;600;700&display=swap">
+<style>
+/* Layout: identity + vitals band on top; tabbed sheet on the left, a sticky dice tray + roll log on the right (bottom sheet on phones). Dark astral void by default. */
+:root{
+  --bg:#eef0f3; --panel:#ffffff; --panel-2:#f4f6f8; --line:#d6dbe2; --fg:#161a20; --muted:#5b6474;
+  --accent:#0d8576; --accent-soft:#d5efeb; --accent-ink:#ffffff;
+  --hp:#c23a40; --temp:#2c6bd3; --gold:#9b6b0e; --good:#1f854a; --bad:#c23a3a; --violet:#7a4fc0;
+  --shadow:0 1px 2px rgba(20,30,40,.06),0 6px 20px rgba(20,30,40,.06);
+  --f-display:"Marcellus SC","Cinzel",Georgia,serif;
+  --f-body:"Alegreya Sans","Segoe UI",system-ui,sans-serif;
+  --f-num:"JetBrains Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+  --r:10px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f1217; --panel:#161a21; --panel-2:#1c222b; --line:#2a313c; --fg:#e5e8ed; --muted:#8e98a8;
+  --accent:#74dccb; --accent-soft:#183a36; --accent-ink:#06211d;
+  --hp:#ec5e63; --temp:#6ea6ff; --gold:#e3b65a; --good:#6fd193; --bad:#f06d6d; --violet:#b592f2;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.25); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f1217; --panel:#161a21; --panel-2:#1c222b; --line:#2a313c; --fg:#e5e8ed; --muted:#8e98a8;
+  --accent:#74dccb; --accent-soft:#183a36; --accent-ink:#06211d;
+  --hp:#ec5e63; --temp:#6ea6ff; --gold:#e3b65a; --good:#6fd193; --bad:#f06d6d; --violet:#b592f2;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.25); color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:16px;line-height:1.45}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.num{font-family:var(--f-num);font-variant-numeric:tabular-nums}
+h1,h2,h3{font-family:var(--f-display);font-weight:400;margin:0;text-wrap:balance}
+.app{max-width:1360px;margin:0 auto;padding-block:16px 96px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+
+/* hero */
+.hero{display:grid;grid-template-columns:minmax(0,1.2fr) auto minmax(0,1.6fr);gap:20px;align-items:stretch;margin-bottom:16px}
+.ident{display:flex;flex-direction:column;justify-content:center;gap:4px;min-width:0}
+.ident h1{font-size:clamp(28px,4vw,40px);line-height:1.05;letter-spacing:.01em}
+.ident .line{color:var(--muted);font-size:15px}
+.ident .line b{color:var(--fg);font-weight:500}
+.save-state{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px;margin-top:4px}
+.save-state i{width:7px;height:7px;border-radius:50%;background:var(--muted);display:inline-block}
+.save-state.ok i{background:var(--good)} .save-state.busy i{background:var(--gold)}
+.ac{position:relative;width:96px;height:110px;align-self:center;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding-bottom:8px}
+.ac svg{position:absolute;inset:0;width:100%;height:100%}
+.ac .v{font-family:var(--f-num);font-size:34px;font-weight:700;position:relative;line-height:1;order:2}
+.ac .l{position:relative;font-size:11px;letter-spacing:.14em;color:var(--muted);text-transform:uppercase;order:1;margin-bottom:2px}
+.ac .why{position:absolute;bottom:-14px;left:50%;transform:translateX(-50%);white-space:nowrap;font-size:11px;color:var(--accent)}
+.vitals{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;box-shadow:var(--shadow);display:grid;gap:10px;min-width:0}
+.hp-row{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.hp-big{font-family:var(--f-num);font-size:34px;font-weight:700;line-height:1}
+.hp-big small{font-size:16px;color:var(--muted);font-weight:400}
+.hp-tmp{font-family:var(--f-num);color:var(--temp);font-weight:600}
+.hp-label{font-size:11px;letter-spacing:.14em;color:var(--muted);text-transform:uppercase;margin-right:auto}
+.bar{height:10px;border-radius:6px;background:var(--panel-2);border:1px solid var(--line);overflow:hidden;display:flex}
+.bar .hpf{background:var(--hp);transition:width .25s}
+.bar .tmpf{background:var(--temp);transition:width .25s}
+.hp-ctl{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.hp-ctl input,.hp-ctl select{height:36px;border:1px solid var(--line);border-radius:8px;background:var(--panel-2);color:var(--fg);padding:0 8px;font:inherit}
+.hp-ctl input{width:72px;font-family:var(--f-num)}
+.hp-ctl select{min-width:0;flex:0 1 130px}
+.btn{height:36px;padding:0 12px;border-radius:8px;border:1px solid var(--line);background:var(--panel-2);font-weight:500;white-space:nowrap}
+.btn:hover{border-color:var(--accent)}
+.btn.dmg{background:var(--hp);border-color:var(--hp);color:#fff}
+.btn.heal{background:var(--good);border-color:var(--good);color:#fff}
+.btn.tmp{background:var(--temp);border-color:var(--temp);color:#fff}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.ghost{background:transparent}
+.btn:disabled{opacity:.45;cursor:not-allowed;border-color:var(--line)}
+.btn.sm{height:30px;padding:0 9px;font-size:14px}
+.quick{display:flex;gap:8px;flex-wrap:wrap}
+.chip{display:flex;flex-direction:column;align-items:flex-start;padding:6px 10px;border:1px solid var(--line);border-radius:8px;background:var(--panel-2);min-width:74px;text-align:left}
+button.chip:hover{border-color:var(--accent)}
+.chip small{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.chip b{font-family:var(--f-num);font-size:17px}
+.dying{border:1px solid var(--hp);border-radius:8px;padding:8px 10px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;background:color-mix(in srgb,var(--hp) 8%,transparent)}
+.pips{display:inline-flex;gap:4px}
+.pip{width:14px;height:14px;border-radius:50%;border:1.5px solid var(--muted);display:inline-block}
+.pip.on.s{background:var(--good);border-color:var(--good)} .pip.on.f{background:var(--hp);border-color:var(--hp)}
+
+/* layout */
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:16px;align-items:start}
+.tabs{display:flex;gap:2px;border-bottom:1px solid var(--line);margin-bottom:14px;overflow-x:auto}
+.tab{background:none;border:0;padding:10px 14px;font-family:var(--f-display);font-size:17px;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap}
+.tab[aria-selected="true"]{color:var(--fg);border-bottom-color:var(--accent)}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;box-shadow:var(--shadow);min-width:0}
+.panel h2{font-size:19px;margin-bottom:10px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.panel h2 .aside{margin-left:auto;font-family:var(--f-body);font-size:13px;color:var(--muted)}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.stack{display:grid;gap:14px}
+.muted{color:var(--muted)}
+.lbl{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+
+/* resources */
+.slots{display:grid;gap:8px}
+.slot-row{display:flex;align-items:center;gap:10px}
+.slot-row .lv{width:44px;font-size:13px;color:var(--muted)}
+.gem{width:24px;height:24px;border:0;background:none;padding:0;display:inline-grid;place-items:center}
+.gem svg{width:20px;height:20px}
+.gem .fill{fill:var(--accent)} .gem.off .fill{fill:transparent}
+.gem .edge{stroke:var(--accent);stroke-width:1.6;fill:none}
+.gem.extra .edge{stroke-dasharray:3 2}
+.gem.sp .fill{fill:var(--violet)} .gem.sp.off .fill{fill:transparent} .gem.sp .edge{stroke:var(--violet)}
+.fom{display:grid;gap:8px;margin-top:10px;padding-top:10px;border-top:1px dashed var(--line)}
+.fom-row{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.fom-row select{height:30px;border:1px solid var(--line);border-radius:7px;background:var(--panel-2);color:var(--fg);font:inherit;font-size:14px;padding:0 6px}
+.free{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.toggle{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border:1px solid var(--line);border-radius:999px;background:var(--panel-2);font-size:14px}
+.toggle[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent);color:var(--fg)}
+.toggle .dot{width:8px;height:8px;border-radius:50%;background:var(--muted)}
+.toggle[aria-pressed="true"] .dot{background:var(--accent)}
+.toggle.cond[aria-pressed="true"]{background:color-mix(in srgb,var(--hp) 14%,transparent);border-color:var(--hp)}
+.toggle.cond[aria-pressed="true"] .dot{background:var(--hp)}
+.effects{display:flex;flex-wrap:wrap;gap:6px}
+.conc{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;background:var(--accent-soft);border:1px solid var(--accent);margin-bottom:10px;flex-wrap:wrap}
+.active-list{display:grid;gap:4px;margin-top:10px;font-size:14px}
+.active-list div{display:flex;gap:8px}
+.active-list b{font-weight:500}
+
+/* tables */
+.rows{display:grid}
+.row{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:10px;align-items:center;padding:8px 0;border-top:1px solid var(--line)}
+.row:first-child{border-top:0}
+.row .nm{font-weight:500}
+.row .meta{font-size:13px;color:var(--muted)}
+.rollbtn{min-width:58px;height:32px;border-radius:7px;border:1px solid var(--line);background:var(--panel-2);font-family:var(--f-num);font-weight:600;padding:0 8px}
+.rollbtn:hover{border-color:var(--accent);background:var(--accent-soft)}
+.rollbtn.dmgb{color:var(--hp)}
+.small-tag{font-size:11px;padding:1px 6px;border-radius:4px;border:1px solid var(--line);color:var(--muted);font-family:var(--f-body);font-weight:500;letter-spacing:.04em}
+.tag-c{border-color:var(--accent);color:var(--accent)}
+.tag-p{border-color:var(--violet);color:var(--violet)}
+.tag-r{border-color:var(--gold);color:var(--gold)}
+
+/* abilities */
+.abils{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px}
+.abil{border:1px solid var(--line);border-radius:10px;background:var(--panel-2);padding:10px 4px 8px;text-align:center;display:grid;gap:2px}
+.abil:hover{border-color:var(--accent)}
+.abil small{font-size:11px;letter-spacing:.14em;color:var(--muted)}
+.abil b{font-family:var(--f-num);font-size:24px}
+.abil span{font-family:var(--f-num);font-size:13px;color:var(--muted)}
+.skills{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 18px}
+.sk{display:flex;align-items:center;gap:8px;padding:5px 2px;border:0;background:none;border-bottom:1px solid var(--line);text-align:left;width:100%}
+.sk:hover{background:var(--panel-2)}
+.sk .p{width:9px;height:9px;border-radius:50%;border:1.5px solid var(--muted);flex:none}
+.sk .p.on{background:var(--accent);border-color:var(--accent)}
+.sk .p.astral{background:var(--violet);border-color:var(--violet)}
+.sk .m{font-family:var(--f-num);font-weight:600;width:34px}
+.sk .a{margin-left:auto;font-size:11px;color:var(--muted);letter-spacing:.08em}
+.feat{padding:10px 0;border-top:1px solid var(--line)}
+.feat:first-of-type{border-top:0}
+.feat h3{font-family:var(--f-body);font-weight:700;font-size:15.5px}
+.feat p{margin:3px 0 0;color:var(--muted);font-size:14.5px;max-width:68ch}
+.feat .src{font-size:12px;color:var(--accent);font-weight:500;margin-left:6px}
+
+/* spells */
+.filters{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.spells{display:grid;gap:10px}
+.spell{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px;display:grid;gap:6px}
+.spell .top{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+.spell .lvl{font-family:var(--f-num);font-size:12px;color:var(--muted);min-width:46px}
+.spell h3{font-family:var(--f-display);font-size:18px}
+.spell .tags{display:flex;gap:4px;flex-wrap:wrap}
+.spell .facts{display:flex;gap:14px;flex-wrap:wrap;font-size:13.5px;color:var(--muted)}
+.spell .facts b{color:var(--fg);font-weight:500}
+.spell p{margin:0;font-size:14.5px;max-width:72ch}
+.spell .acts{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+
+/* spell overview */
+.sp-res{display:flex;flex-wrap:wrap;gap:10px 22px;margin-bottom:12px;align-items:flex-end}
+.sp-res>div{display:grid;gap:4px}
+.mini{display:inline-flex;gap:3px}
+.mini i{width:11px;height:11px;transform:rotate(45deg);border:1.5px solid var(--accent);display:inline-block;margin:2px}
+.mini i.on{background:var(--accent)}
+.mini.sp i{border-color:var(--violet)} .mini.sp i.on{background:var(--violet)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:999px;overflow:hidden;margin-right:6px}
+.seg button{border:0;background:var(--panel-2);padding:5px 12px;font-size:14px}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);font-weight:700}
+.sp-group{margin-top:14px}
+.sp-gh{display:flex;align-items:baseline;gap:12px;font-size:20px;margin-bottom:6px}
+.sp-gh .muted{font-family:var(--f-body);font-size:14px}
+.sp-table{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.sp-row{display:grid;grid-template-columns:minmax(0,2.3fr) minmax(0,1.4fr) minmax(0,.8fr) minmax(0,1fr) minmax(0,1.5fr) auto;gap:12px;padding:10px 14px;border-top:1px solid var(--line);align-items:start;font-size:14px}
+.sp-row:first-child{border-top:0}
+.sp-row.off{opacity:.55}
+.sp-head{background:var(--panel-2);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);padding-block:7px}
+.sp-toggle{border:0;background:none;padding:0;display:inline-flex;gap:6px;align-items:baseline;text-align:left;font-size:15.5px}
+.sp-toggle .chev{color:var(--muted);font-size:12px}
+.sp-name .tags{display:inline-flex;gap:4px;margin-left:6px;vertical-align:2px}
+.sp-sum{color:var(--muted);margin-top:2px}
+.sp-cost{display:flex;flex-direction:column;gap:2px}
+.spell .sp-cost{flex-direction:row;flex-wrap:wrap;gap:4px 12px;font-size:13.5px}
+.cost-slot b{color:var(--accent)}
+.cost-sp{color:var(--violet)} .cost-free{color:var(--gold)}
+.sp-cost .empty{opacity:.55;text-decoration:line-through}
+.sp-cost .cost-slot.empty{text-decoration:none}
+.sp-more{grid-column:1/-1;border-top:1px dashed var(--line);padding-top:8px}
+.sp-more p{margin:0 0 4px;max-width:75ch}
+.mlbl{display:none}
+@media (max-width:820px){
+  .sp-head{display:none}
+  .sp-row{grid-template-columns:minmax(0,1fr) auto;gap:6px 12px}
+  .sp-name{grid-column:1/2}
+  .sp-go{grid-column:2;grid-row:1}
+  .sp-cost,.sp-time,.sp-rd,.sp-does{grid-column:1/-1}
+  .mlbl{display:inline-block;width:62px;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+  .sp-rd br,.sp-does br{display:none}
+  .sp-rd .muted::before,.sp-does .muted::before{content:" · "}
+  .sp-cost{flex-direction:row;flex-wrap:wrap;gap:2px 10px}
+}
+
+/* inventory */
+.coins{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+.coin{display:grid;gap:4px;text-align:center}
+.coin input{width:100%;height:38px;text-align:center;border:1px solid var(--line);border-radius:8px;background:var(--panel-2);color:var(--fg);font-family:var(--f-num);font-size:16px}
+.item{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:12px;padding:7px 0;border-top:1px solid var(--line);font-size:15px}
+.item:first-child{border-top:0}
+.item .w{font-family:var(--f-num);font-size:13px;color:var(--muted)}
+.counter{display:inline-flex;align-items:center;gap:6px}
+.counter button{width:28px;height:28px;border-radius:6px;border:1px solid var(--line);background:var(--panel-2)}
+textarea{width:100%;min-height:140px;border:1px solid var(--line);border-radius:8px;background:var(--panel-2);color:var(--fg);font:inherit;padding:10px}
+
+/* tray */
+.tray{position:sticky;top:12px;display:grid;gap:12px;max-height:calc(100vh - 24px);grid-template-rows:auto minmax(0,1fr)}
+.dice{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.die{height:44px;border-radius:8px;border:1px solid var(--line);background:var(--panel-2);font-family:var(--f-num);font-weight:700;font-size:15px}
+.die:hover{border-color:var(--accent);background:var(--accent-soft)}
+.expr{display:flex;gap:6px;margin-top:8px}
+.expr input{flex:1;min-width:0;height:38px;border:1px solid var(--line);border-radius:8px;background:var(--panel-2);color:var(--fg);font-family:var(--f-num);padding:0 10px;font-size:15px}
+.mode{display:grid;grid-template-columns:repeat(3,1fr);gap:0;margin-top:8px;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.mode button{border:0;background:var(--panel-2);height:32px;font-size:13.5px}
+.mode button+button{border-left:1px solid var(--line)}
+.mode button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);font-weight:700}
+.mode-note{font-size:12px;color:var(--muted);margin-top:4px}
+.log{overflow:auto;display:grid;gap:8px;align-content:start;padding-right:2px}
+.log-empty{color:var(--muted);font-size:14px;padding:6px 0}
+.entry{border:1px solid var(--line);border-radius:9px;padding:9px 11px;background:var(--panel);display:grid;gap:4px}
+.entry.old{opacity:.5}
+.entry .eh{display:flex;gap:8px;align-items:baseline}
+.entry .et{font-weight:700;font-size:14.5px}
+.entry .es{font-size:12.5px;color:var(--muted)}
+.entry .tm{margin-left:auto;font-size:11px;color:var(--muted);font-family:var(--f-num)}
+.entry .nums{display:flex;gap:16px;align-items:baseline;flex-wrap:wrap}
+.entry .n b{font-family:var(--f-num);font-size:26px;font-weight:700;line-height:1}
+.entry .n small{font-size:12px;color:var(--muted);margin-left:4px}
+.entry .n.dm b{color:var(--hp)}
+.entry .n.ok b{color:var(--good)} .entry .n.no b{color:var(--bad)}
+.entry .det{font-family:var(--f-num);font-size:12px;color:var(--muted);word-break:break-word}
+.entry .det s{opacity:.6}
+.entry .note{font-size:13.5px}
+.entry.crit{border-color:var(--gold);box-shadow:inset 3px 0 0 var(--gold)}
+.entry.fumble{border-color:var(--bad);box-shadow:inset 3px 0 0 var(--bad)}
+.entry .badge{font-size:11px;font-weight:700;letter-spacing:.08em;padding:1px 6px;border-radius:4px}
+.entry.crit .badge{background:var(--gold);color:#1a1200}
+.entry.fumble .badge{background:var(--bad);color:#fff}
+.entry .ea{display:flex;gap:6px;flex-wrap:wrap;margin-top:2px}
+.fab{display:none}
+
+/* modal + toast */
+.modal-bg{position:fixed;inset:0;background:rgba(5,8,12,.55);display:grid;place-items:center;z-index:50;padding:16px}
+.modal{background:var(--panel);border:1px solid var(--line);border-radius:12px;max-width:460px;width:100%;max-height:calc(100vh - 32px);overflow:auto;padding:18px;box-shadow:var(--shadow);display:grid;gap:12px}
+.modal h2{font-size:22px}
+.opt{display:flex;gap:10px;align-items:flex-start;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--panel-2)}
+.opt:has(input:checked){border-color:var(--accent);background:var(--accent-soft)}
+.opt input{margin-top:4px;accent-color:var(--accent)}
+.opt small{display:block;color:var(--muted);font-size:13px}
+.opt.dis{opacity:.5}
+.modal .foot{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;align-items:center}
+.modal .cost{margin-right:auto;font-size:14px;color:var(--muted)}
+.warn{font-size:13.5px;color:var(--gold)}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(18px + env(safe-area-inset-bottom,0px));background:var(--fg);color:var(--bg);padding:10px 16px;border-radius:10px;z-index:60;display:flex;gap:12px;align-items:baseline;box-shadow:var(--shadow);max-width:calc(100vw - 32px)}
+.toast b{font-family:var(--f-num);font-size:22px}
+.toast span{font-size:14px}
+
+@media (max-width:1060px){
+  .hero{grid-template-columns:minmax(0,1fr) auto}
+  .vitals{grid-column:1/-1}
+  .layout{grid-template-columns:minmax(0,1fr)}
+  .tray{position:fixed;left:0;right:0;bottom:0;top:auto;max-height:78vh;background:var(--bg);border-top:1px solid var(--line);padding:14px max(16px,env(safe-area-inset-right,0px)) calc(14px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));z-index:40;transform:translateY(102%);transition:transform .2s;box-shadow:0 -10px 30px rgba(0,0,0,.25);border-radius:14px 14px 0 0}
+  .tray.open{transform:none}
+  .fab{display:flex;position:fixed;right:calc(16px + env(safe-area-inset-right,0px));bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:45;height:52px;padding:0 18px;border-radius:26px;border:0;background:var(--accent);color:var(--accent-ink);font-weight:700;align-items:center;gap:8px;box-shadow:var(--shadow)}
+  .toast{bottom:calc(80px + env(safe-area-inset-bottom,0px))}
+}
+@media (max-width:720px){
+  .grid2{grid-template-columns:minmax(0,1fr)}
+  .abils{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .skills{grid-template-columns:minmax(0,1fr)}
+  .coins{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="app">
+  <header class="hero">
+    <div class="ident">
+      <h1>Thrandir Morviil</h1>
+      <div class="line"><b>Githyanki</b> · Sorcerer 7 (<b>Aberrant Mind</b>) · Far Traveler · Chaotic Neutral</div>
+      <div class="save-state" id="saveState"><i></i><span>Loading…</span></div>
+    </div>
+    <div class="ac" title="Armor Class">
+      <svg viewBox="0 0 96 110" aria-hidden="true"><path d="M48 4 L88 18 V52 C88 78 70 96 48 106 C26 96 8 78 8 52 V18 Z" fill="var(--panel)" stroke="var(--accent)" stroke-width="2"/></svg>
+      <div class="v" id="acVal">12</div>
+      <div class="l">AC</div>
+      <div class="why" id="acWhy"></div>
+    </div>
+    <section class="vitals" aria-label="Hit points">
+      <div class="hp-row">
+        <span class="hp-label">Hit points</span>
+        <span class="hp-big" id="hpBig">43<small>/43</small></span>
+        <span class="hp-tmp" id="hpTmp"></span>
+      </div>
+      <div class="bar" aria-hidden="true"><div class="hpf" id="hpFill"></div><div class="tmpf" id="tmpFill"></div></div>
+      <div class="hp-ctl">
+        <input id="hpAmt" type="number" min="0" inputmode="numeric" placeholder="0" aria-label="Amount">
+        <select id="dmgType" aria-label="Damage type">
+          <option value="">Damage type</option>
+          <option>acid</option><option>bludgeoning</option><option>cold</option><option>fire</option><option>force</option><option>lightning</option><option>necrotic</option><option>piercing</option><option>poison</option><option>psychic</option><option>radiant</option><option>slashing</option><option>thunder</option>
+        </select>
+        <button class="btn dmg" data-act="damage">Damage</button>
+        <button class="btn heal" data-act="heal">Heal</button>
+        <button class="btn tmp" data-act="temp">Temp HP</button>
+      </div>
+      <div id="dyingBox"></div>
+      <div class="quick" id="quick"></div>
+    </section>
+  </header>
+
+  <div class="layout">
+    <main>
+      <nav class="tabs" role="tablist">
+        <button class="tab" role="tab" data-tab="combat" aria-selected="true">Combat</button>
+        <button class="tab" role="tab" data-tab="spells" aria-selected="false">Spells</button>
+        <button class="tab" role="tab" data-tab="char" aria-selected="false">Character</button>
+        <button class="tab" role="tab" data-tab="inv" aria-selected="false">Inventory</button>
+      </nav>
+      <section id="tab-combat"></section>
+      <section id="tab-spells" hidden></section>
+      <section id="tab-char" hidden></section>
+      <section id="tab-inv" hidden>
+        <div class="stack">
+          <div class="panel"><h2>Coins</h2><div class="coins" id="coins"></div></div>
+          <div class="grid2">
+            <div class="panel"><h2>Equipment <span class="aside" id="weight"></span></h2><div id="items"></div></div>
+            <div class="panel"><h2>Notes</h2><textarea id="notes" placeholder="Quest hooks, NPC names, loot to sell…"></textarea>
+              <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;align-items:center"><button class="btn sm ghost" data-act="resetAsk" id="resetBtn">Reset sheet to defaults</button></div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <aside class="tray" id="tray" aria-label="Dice">
+      <div class="panel">
+        <h2>Dice <span class="aside">click to add, then roll</span></h2>
+        <div class="dice">
+          <button class="die" data-die="4">d4</button><button class="die" data-die="6">d6</button><button class="die" data-die="8">d8</button><button class="die" data-die="10">d10</button>
+          <button class="die" data-die="12">d12</button><button class="die" data-die="20">d20</button><button class="die" data-die="100">d100</button><button class="die" data-act="clearExpr" title="Clear">clear</button>
+        </div>
+        <div class="expr">
+          <input id="expr" placeholder="e.g. 2d6+3" aria-label="Dice expression" autocomplete="off">
+          <button class="btn primary" data-act="rollExpr">Roll</button>
+        </div>
+        <div class="mode" id="modeBox">
+          <button data-mode="dis" aria-pressed="false">Disadvantage</button>
+          <button data-mode="normal" aria-pressed="true">Normal</button>
+          <button data-mode="adv" aria-pressed="false">Advantage</button>
+        </div>
+        <div class="mode-note">Applies to your next d20 roll, then resets. Effects and conditions add their own.</div>
+      </div>
+      <div class="panel" style="display:grid;grid-template-rows:auto minmax(0,1fr);min-height:0">
+        <h2>Roll log <button class="btn sm ghost" data-act="clearLog" style="margin-left:auto">Clear</button></h2>
+        <div class="log" id="log"><div class="log-empty">Click any bonus on the sheet to roll it. Results land here.</div></div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<button class="fab" id="fab" data-act="tray">⚅ Dice &amp; log</button>
+<div id="modalRoot"></div>
+<div id="toast" class="toast" hidden></div>
+
+<script>
+"use strict";
+/* ---------- character data ---------- */
+const LEVEL = 7;
+const PROF = Math.ceil(LEVEL / 4) + 1;
+const ABIL = { STR: 10, DEX: 14, CON: 13, INT: 8, WIS: 14, CHA: 18 };
+const ABIL_NAMES = { STR: "Strength", DEX: "Dexterity", CON: "Constitution", INT: "Intelligence", WIS: "Wisdom", CHA: "Charisma" };
+const SAVE_PROF = ["CON", "CHA"];
+const SKILLS = [
+  ["Acrobatics","DEX"],["Animal Handling","WIS"],["Arcana","INT",1],["Athletics","STR"],["Deception","CHA",1],["History","INT"],
+  ["Insight","WIS",1],["Intimidation","CHA",1],["Investigation","INT"],["Medicine","WIS"],["Nature","INT"],["Perception","WIS",1],
+  ["Performance","CHA"],["Persuasion","CHA"],["Religion","INT"],["Sleight of Hand","DEX"],["Stealth","DEX"],["Survival","WIS"]
+];
+const MAX_SLOTS = { 1: 4, 2: 3, 3: 3, 4: 1, 5: 0 };
+const SP_MAX = LEVEL;
+const SP_COST = { 1: 2, 2: 3, 3: 5, 4: 6, 5: 7 };
+const HIT_DIE = 6;
+const mod = a => Math.floor((ABIL[a] - 10) / 2);
+const sgn = n => (n >= 0 ? "+" : "−") + Math.abs(n);
+const SPELL_ATK = PROF + mod("CHA");
+const SPELL_DC = 8 + PROF + mod("CHA");
+const cantripDice = LEVEL >= 17 ? 4 : LEVEL >= 11 ? 3 : LEVEL >= 5 ? 2 : 1;
+
+const EFFECTS = {
+  mageArmor: { name: "Mage Armor", desc: "Base AC becomes 13 + DEX.", kind: "buff" },
+  shield: { name: "Shield", desc: "+5 AC until the start of your next turn.", kind: "buff" },
+  bladeWard: { name: "Blade Ward", desc: "Resistance to bludgeoning, piercing and slashing from weapons.", kind: "buff" },
+  enlarged: { name: "Enlarged", desc: "Advantage on STR checks and saves; weapon hits +1d4.", kind: "buff", roll: [{ on: "check", abil: "STR", m: "adv" }, { on: "save", abil: "STR", m: "adv" }] },
+  reduced: { name: "Reduced", desc: "Disadvantage on STR checks and saves; weapon hits −1d4.", kind: "buff", roll: [{ on: "check", abil: "STR", m: "dis" }, { on: "save", abil: "STR", m: "dis" }] },
+  invisible: { name: "Invisible", desc: "Your attacks have advantage; attacks against you have disadvantage.", kind: "buff", roll: [{ on: "attack", m: "adv" }] },
+  blinded: { name: "Blinded", desc: "Your attacks have disadvantage; attacks against you have advantage.", kind: "cond", roll: [{ on: "attack", m: "dis" }] },
+  charmed: { name: "Charmed", desc: "Can't attack the charmer. (You have advantage on saves against this.)", kind: "cond" },
+  frightened: { name: "Frightened", desc: "Disadvantage on checks and attacks while the source is in sight.", kind: "cond", roll: [{ on: "attack", m: "dis" }, { on: "check", m: "dis" }] },
+  poisoned: { name: "Poisoned", desc: "Disadvantage on attacks and ability checks.", kind: "cond", roll: [{ on: "attack", m: "dis" }, { on: "check", m: "dis" }] },
+  prone: { name: "Prone", desc: "Your attacks have disadvantage. Standing up costs half your speed.", kind: "cond", roll: [{ on: "attack", m: "dis" }] },
+  restrained: { name: "Restrained", desc: "Speed 0, disadvantage on attacks and DEX saves.", kind: "cond", roll: [{ on: "attack", m: "dis" }, { on: "save", abil: "DEX", m: "dis" }] },
+  deafened: { name: "Deafened", desc: "Can't hear. Auto-succeed against Dissonant Whispers-style effects.", kind: "cond" },
+  incapacitated: { name: "Incapacitated", desc: "No actions or reactions. Ends concentration.", kind: "cond" }
+};
+
+const WEAPONS = [
+  { name: "Dagger", abil: "fin", dmg: [{ n: 1, d: 4, t: "piercing" }], meta: "Finesse, light, thrown 20/60 ft" },
+  { name: "Quarterstaff", abil: "STR", dmg: [{ n: 1, d: 6, t: "bludgeoning" }], meta: "Versatile (1d8 two-handed)", alt: { label: "2H", dmg: [{ n: 1, d: 8, t: "bludgeoning" }] } },
+  { name: "Light Crossbow", abil: "DEX", dmg: [{ n: 1, d: 8, t: "piercing" }], meta: "80/320 ft, loading, uses a bolt", ammo: true },
+  { name: "Unarmed Strike", abil: "STR", flatDmg: 1, dmg: [], meta: "1 + STR bludgeoning", type: "bludgeoning" }
+];
+
+/* Spell data. roll: attack | save | none. dmg dice scale per level with `up` dice per slot above base. */
+const S = (o) => Object.assign({ conc: false, rit: false, psi: false, roll: "none" }, o);
+const SPELLS = [
+  S({ id: "shockingGrasp", name: "Shocking Grasp", lvl: 0, time: "Action", range: "Touch", comp: "V S", roll: "attack", melee: true, dmg: [{ n: 1, d: 8, t: "lightning" }], scale: true,
+      desc: "Melee spell attack, with advantage if the target wears metal armor. On a hit it can't take reactions until its next turn." }),
+  S({ id: "fireBolt", name: "Fire Bolt", lvl: 0, time: "Action", range: "120 ft", comp: "V S", roll: "attack", dmg: [{ n: 1, d: 10, t: "fire" }], scale: true,
+      desc: "Ranged spell attack. Unattended flammable objects it hits catch fire." }),
+  S({ id: "rayOfFrost", name: "Ray of Frost", lvl: 0, time: "Action", range: "60 ft", comp: "V S", roll: "attack", dmg: [{ n: 1, d: 8, t: "cold" }], scale: true,
+      desc: "Ranged spell attack. On a hit the target's speed drops by 10 ft until the start of your next turn." }),
+  S({ id: "mindSliver", name: "Mind Sliver", lvl: 0, time: "Action", range: "60 ft", comp: "V", psi: true, roll: "save", save: "INT", noHalf: true, dmg: [{ n: 1, d: 6, t: "psychic" }], scale: true,
+      desc: "INT save or take psychic damage and subtract 1d4 from its next saving throw before the end of your next turn.", extra: { label: "Roll 1d4 penalty", dice: "1d4" } }),
+  S({ id: "mageHand", name: "Mage Hand", lvl: 0, time: "Action", range: "30 ft", comp: "V S",
+      desc: "A floating hand for 1 minute that can lift up to 10 lb, open doors and containers. Invisible when cast through Githyanki Psionics." }),
+  S({ id: "message", name: "Message", lvl: 0, time: "Action", range: "120 ft", comp: "V S M",
+      desc: "Whisper to one creature in range; only it hears, and it can whisper back. Thin lead, metal, stone or wood blocks it." }),
+  S({ id: "bladeWard", name: "Blade Ward", lvl: 0, time: "Action", range: "Self", comp: "V S", effect: "bladeWard",
+      desc: "Until the end of your next turn you resist bludgeoning, piercing and slashing damage from weapon attacks." }),
+  S({ id: "mageArmor", name: "Mage Armor", lvl: 1, time: "Action", range: "Touch", comp: "V S M", effect: "mageArmor",
+      desc: "An unarmored willing creature's base AC becomes 13 + its DEX for 8 hours." }),
+  S({ id: "jump", name: "Jump", lvl: 1, time: "Action", range: "Touch", comp: "V S M", free: "jump",
+      desc: "Triple a creature's jump distance for 1 minute. Free once per long rest from Githyanki Psionics." }),
+  S({ id: "armsOfHadar", name: "Arms of Hadar", lvl: 1, time: "Action", range: "Self (10 ft)", comp: "V S", psi: true, roll: "save", save: "STR", dmg: [{ n: 2, d: 6, t: "necrotic", up: 1 }],
+      desc: "Every creature within 10 ft makes a STR save. Half damage on a success; on a failure it also can't take reactions until its next turn." }),
+  S({ id: "dissonantWhispers", name: "Dissonant Whispers", lvl: 1, time: "Action", range: "60 ft", comp: "V", psi: true, roll: "save", save: "WIS", dmg: [{ n: 3, d: 6, t: "psychic", up: 1 }],
+      desc: "One creature makes a WIS save. On a failure it must use its reaction to move away from you. Half damage on a success. Deafened creatures succeed." }),
+  S({ id: "chaosBolt", name: "Chaos Bolt", lvl: 1, time: "Action", range: "120 ft", comp: "V S", roll: "chaos",
+      desc: "Ranged spell attack for 2d8 + 1d6 (+1d6 per slot above 1st). One of the d8s picks the damage type. If both d8s match, it leaps to another creature within 30 ft." }),
+  S({ id: "shield", name: "Shield", lvl: 1, time: "Reaction", range: "Self", comp: "V S", effect: "shield",
+      desc: "When you're hit or targeted by magic missile: +5 AC until the start of your next turn, including against that attack." }),
+  S({ id: "calmEmotions", name: "Calm Emotions", lvl: 2, time: "Action", range: "60 ft", comp: "V S", conc: true, psi: true, roll: "save", save: "CHA",
+      desc: "Humanoids in a 20-ft sphere make a CHA save (they may choose to fail). Suppress charm and fear, or make targets indifferent to creatures they're hostile to." }),
+  S({ id: "detectThoughts", name: "Detect Thoughts", lvl: 2, time: "Action", range: "Self", comp: "V S M", conc: true, psi: true, roll: "save", save: "WIS",
+      desc: "Read the surface thoughts of a creature within 30 ft. Use an action to probe deeper (WIS save). You can also sense thinking creatures you can't see." }),
+  S({ id: "enlargeReduce", name: "Enlarge/Reduce", lvl: 2, time: "Action", range: "30 ft", comp: "V S M", conc: true, roll: "save", save: "CON",
+      desc: "A creature or object doubles or halves in size. Enlarged: advantage on STR checks and saves, +1d4 weapon damage. Reduced: the opposite. Unwilling targets make a CON save.", selfPick: ["enlarged", "reduced"] }),
+  S({ id: "invisibility", name: "Invisibility", lvl: 2, time: "Action", range: "Touch", comp: "V S M", conc: true,
+      desc: "A creature turns invisible until it attacks or casts a spell.", selfPick: ["invisible"] }),
+  S({ id: "mistyStep", name: "Misty Step", lvl: 2, time: "Bonus action", range: "Self", comp: "V", free: "misty",
+      desc: "Teleport up to 30 ft to an unoccupied space you can see. Free once per long rest from Githyanki Psionics." }),
+  S({ id: "sending", name: "Sending", lvl: 3, time: "Action", range: "Unlimited", comp: "V S M", psi: true,
+      desc: "Send 25 words to a creature you know, anywhere. It recognizes you and can answer. 5% chance to fail across planes." }),
+  S({ id: "enemiesAbound", name: "Enemies Abound", lvl: 3, time: "Action", range: "120 ft", comp: "V S", conc: true, roll: "save", save: "INT",
+      desc: "INT save or the target sees every creature as an enemy and picks targets at random. It repeats the save each time it takes damage." }),
+  S({ id: "majorImage", name: "Major Image", lvl: 3, time: "Action", range: "120 ft", comp: "V S M", conc: true,
+      desc: "An illusion up to a 20-ft cube, with sound, smell and temperature. An Investigation check against your DC sees through it." }),
+  S({ id: "hungerOfHadar", name: "Hunger of Hadar", lvl: 3, time: "Action", range: "150 ft", comp: "V S M", conc: true, psi: true, roll: "hunger",
+      desc: "A 20-ft sphere of freezing darkness: blinds everyone inside and is difficult terrain. 2d6 cold to anyone starting its turn inside; 2d6 acid to anyone ending its turn inside unless they pass a DEX save." }),
+  S({ id: "evardsTentacles", name: "Evard's Black Tentacles", lvl: 4, time: "Action", range: "90 ft", comp: "V S M", conc: true, psi: true, roll: "save", save: "DEX", noHalf: true, dmg: [{ n: 3, d: 6, t: "bludgeoning" }],
+      desc: "Tentacles fill a 20-ft square of difficult terrain. A creature entering or starting its turn there makes a DEX save or takes damage and is restrained. Restrained creatures take damage each turn." }),
+  S({ id: "confusion", name: "Confusion", lvl: 4, time: "Action", range: "90 ft", comp: "V S M", conc: true, roll: "save", save: "WIS",
+      desc: "Creatures in a 10-ft sphere make a WIS save. Affected creatures can't take reactions and roll a d10 each turn for their behavior; they save again at the end of each turn.", confusion: true }),
+  S({ id: "summonAberration", name: "Summon Aberration", lvl: 4, time: "Action", range: "90 ft", comp: "V S M", conc: true, psi: true,
+      desc: "Summon a Beholderkin, Slaad or Star Spawn spirit. It shares your initiative, acts right after you and obeys your commands." })
+];
+const SPELL_INFO = {
+  shockingGrasp: ["Instant", "Damage", "Melee zap; target loses its reaction"],
+  fireBolt: ["Instant", "Damage", "Long-range fire attack"],
+  rayOfFrost: ["Instant", "Damage", "Cold attack that slows by 10 ft"],
+  mindSliver: ["1 round", "Damage", "Psychic hit; −1d4 on its next save"],
+  mageHand: ["1 minute", "Utility", "Invisible floating hand, lifts 10 lb"],
+  message: ["1 round", "Social", "Private whispered two-way message"],
+  bladeWard: ["1 round", "Defense", "Resist weapon damage"],
+  mageArmor: ["8 hours", "Defense", "AC 15 without armor"],
+  jump: ["1 minute", "Movement", "Triple jump distance"],
+  armsOfHadar: ["Instant", "Damage", "10-ft burst around you; no reactions"],
+  dissonantWhispers: ["Instant", "Damage", "Psychic hit; target runs from you"],
+  chaosBolt: ["Instant", "Damage", "Random damage type; may chain"],
+  shield: ["1 round", "Defense", "+5 AC as a reaction"],
+  calmEmotions: ["1 minute", "Social", "Cancel charm/fear or calm hostility"],
+  detectThoughts: ["1 minute", "Utility", "Read surface thoughts"],
+  enlargeReduce: ["1 minute", "Control", "Grow an ally or shrink an enemy"],
+  invisibility: ["1 hour", "Utility", "Target turns invisible"],
+  mistyStep: ["Instant", "Movement", "Teleport 30 ft"],
+  sending: ["1 round", "Social", "25-word message, any distance"],
+  enemiesAbound: ["1 minute", "Control", "Target treats everyone as an enemy"],
+  majorImage: ["10 minutes", "Utility", "Large illusion with sound and smell"],
+  hungerOfHadar: ["1 minute", "Control", "Blinding void; cold + acid each turn"],
+  evardsTentacles: ["1 minute", "Control", "Area restrain; 3d6 each turn"],
+  confusion: ["1 minute", "Control", "Area; targets act at random"],
+  summonAberration: ["1 hour", "Damage", "Summon a fighting aberration"]
+};
+for (const s of SPELLS) { const [dur, role, sum] = SPELL_INFO[s.id]; Object.assign(s, { dur, role, sum }); }
+const ROLES = ["Damage", "Control", "Defense", "Movement", "Utility", "Social"];
+const SPELL_BY_ID = Object.fromEntries(SPELLS.map(s => [s.id, s]));
+
+const FEATURES = [
+  ["Font of Magic", "Sorcerer", "You have sorcery points (7 at this level). Convert a spell slot into points equal to its level, or spend points to create a slot of 5th level or lower (2/3/5/6/7 points). Created slots vanish on a long rest. Both are bonus actions."],
+  ["Metamagic: Careful Spell", "Sorcerer", "1 point: when a spell forces saves, up to your CHA modifier (4) creatures automatically succeed."],
+  ["Metamagic: Distant Spell", "Sorcerer", "1 point: double a spell's range, or make a touch spell's range 30 ft."],
+  ["Metamagic: Seeking Spell", "Sorcerer", "2 points: when you miss with a spell attack, reroll the d20 and use the new roll. Works alongside another Metamagic."],
+  ["Magical Guidance", "Sorcerer", "1 point: when you fail an ability check, reroll the d20 and use the new roll."],
+  ["Psionic Spells", "Aberrant Mind", "Arms of Hadar, Dissonant Whispers, Mind Sliver, Calm Emotions, Detect Thoughts, Hunger of Hadar, Sending, Evard's Black Tentacles and Summon Aberration are always known."],
+  ["Psionic Sorcery", "Aberrant Mind", "Cast a psionic spell of 1st level or higher by spending sorcery points equal to its level instead of a slot. Cast this way it needs no verbal or somatic components, and no material components unless they're consumed."],
+  ["Psychic Defenses", "Aberrant Mind", "Resistance to psychic damage and advantage on saves against being charmed or frightened."],
+  ["Telepathic Speech", "Aberrant Mind", "Bonus action: link minds with a creature you can see within 30 ft. You can talk telepathically within 4 miles for 7 minutes, if you share a language."],
+  ["Sorcerous Versatility", "Sorcerer", "When you gain an Ability Score Improvement, you may swap one Metamagic option or one cantrip."],
+  ["Spellcasting", "Sorcerer", "Charisma is your spellcasting ability. Spell save DC 15, spell attack +7. You can use an arcane focus (your staff)."]
+];
+const TRAITS = [
+  ["Githyanki Psionics", "Githyanki", "You know Mage Hand (the hand is invisible). Cast Jump and Misty Step once each per long rest for free, or with slots. These need no components when cast with this trait."],
+  ["Astral Knowledge", "Githyanki", "After each long rest, gain proficiency in one skill and one weapon or tool of your choice until your next long rest. Pick the skill on the Character tab."],
+  ["Psychic Resilience", "Githyanki", "Resistance to psychic damage."],
+  ["All Eyes on You", "Far Traveler", "Your foreign look draws curiosity. You can turn that interest into access to nobles, scholars and merchants."]
+];
+const ITEMS = [
+  ["Staff (arcane focus)", 4, 1], ["Dagger", 2, 2], ["Light Crossbow", 5, 1], ["Traveler's Clothes", 4, 1], ["Bagpipes", 6, 1],
+  ["Torch", 1, 10], ["Backpack", 5, 1], ["Bedroll", 7, 1], ["Mess Kit", 1, 1], ["Tinderbox", 1, 1], ["Waterskin", 5, 1],
+  ["Hempen Rope (50 ft)", 10, 1], ["Rations (days)", 2, 10], ["Pouch", 1, 1], ["Jewelry (10 gp)", 0, 1], ["Maps", 0, 1]
+];
+
+/* ---------- state ---------- */
+const DEFAULT_STATE = () => ({
+  v: 1, hp: 43, maxHp: 43, temp: 0, hd: 7,
+  slots: { 1: 4, 2: 3, 3: 3, 4: 1, 5: 0 }, sp: SP_MAX, insp: false,
+  ds: { s: 0, f: 0 }, conc: null, effects: [], free: { jump: true, misty: true },
+  bolts: 20, coins: { cp: 0, sp: 0, ep: 0, gp: 5, pp: 0 }, astral: "", notes: ""
+});
+let state = DEFAULT_STATE();
+let nextMode = "normal";
+let logEntries = [];
+const logActions = new Map();
+let entrySeq = 0;
+let spellFilter = "all";
+let roleFilter = "all";
+let spellView = "overview";
+const openSpells = new Set();
+try { spellView = localStorage.getItem("thrandir-spellview") || "overview"; } catch (e) {}
+let resetArmed = false;
+
+function hasEff(id) { return state.effects.includes(id); }
+function setEff(id, on) {
+  const i = state.effects.indexOf(id);
+  if (on && i < 0) state.effects.push(id);
+  if (!on && i >= 0) state.effects.splice(i, 1);
+}
+function acInfo() {
+  let base = 10 + mod("DEX"), why = [];
+  if (hasEff("mageArmor")) { base = 13 + mod("DEX"); why.push("Mage Armor"); }
+  if (hasEff("shield")) { base += 5; why.push("Shield"); }
+  return { ac: base, why: why.join(" + ") };
+}
+const astralProf = name => state.astral === name;
+function skillMod(name, ab, p) { return mod(ab) + (p || astralProf(name) ? PROF : 0); }
+function saveMod(ab) { return mod(ab) + (SAVE_PROF.includes(ab) ? PROF : 0); }
+
+/* ---------- persistence ---------- */
+const LS_KEY = "thrandir-sheet-v1";
+let dbRef = null, saveTimer = null, lastSaved = "";
+function setSaveState(cls, text) {
+  const el = document.getElementById("saveState");
+  el.className = "save-state " + cls;
+  el.querySelector("span").textContent = text;
+}
+function persist() {
+  const json = JSON.stringify(state);
+  try { localStorage.setItem(LS_KEY, json); } catch (e) {}
+  if (!dbRef) { setSaveState("ok", "Saved in this browser"); return; }
+  clearTimeout(saveTimer);
+  setSaveState("busy", "Saving…");
+  saveTimer = setTimeout(async () => {
+    if (json === lastSaved) { setSaveState("ok", "Saved to your account"); return; }
+    try { await dbRef.set(JSON.parse(json)); lastSaved = json; setSaveState("ok", "Saved to your account"); }
+    catch (e) { setSaveState("", "Saved in this browser only"); }
+  }, 600);
+}
+function mergeState(raw) {
+  const d = DEFAULT_STATE();
+  if (!raw || typeof raw !== "object") return d;
+  const s = Object.assign(d, raw);
+  s.slots = Object.assign(DEFAULT_STATE().slots, raw.slots || {});
+  s.coins = Object.assign(DEFAULT_STATE().coins, raw.coins || {});
+  s.free = Object.assign(DEFAULT_STATE().free, raw.free || {});
+  s.ds = Object.assign({ s: 0, f: 0 }, raw.ds || {});
+  if (!Array.isArray(s.effects)) s.effects = [];
+  return s;
+}
+async function connectStore() {
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    if (raw) { state = mergeState(JSON.parse(raw)); }
+  } catch (e) {}
+  renderAll();
+  setSaveState("", "Saved in this browser");
+  if (!window.claude || !window.claude.use) return;
+  try {
+    const [db, user] = await Promise.all([window.claude.use("db"), window.claude.use("user")]);
+    if (!db || !user) return;
+    const id = await user.id();
+    if (!id) return;
+    const ref = db.doc("data/users/" + id + "/sheets_" + "thrandir");
+    setSaveState("busy", "Loading your saved sheet…");
+    const snap = await Promise.race([ref.get(), new Promise((_, rej) => setTimeout(() => rej(new Error("timeout")), 10000))]);
+    dbRef = ref;
+    const data = snap && snap.data && snap.data();
+    if (data) { state = mergeState(data); lastSaved = JSON.stringify(state); renderAll(); try { localStorage.setItem(LS_KEY, lastSaved); } catch (e) {} setSaveState("ok", "Saved to your account"); }
+    else persist();
+  } catch (e) { setSaveState("", "Saved in this browser"); }
+}
+function commit() { renderAll(); persist(); }
+
+/* ---------- dice ---------- */
+const RNG_BUF = new Uint32Array(1);
+function d(n) {
+  // Rejection sampling: discard the top sliver of the 32-bit range so every face is exactly equally likely.
+  const limit = 0x100000000 - (0x100000000 % n);
+  do { crypto.getRandomValues(RNG_BUF); } while (RNG_BUF[0] >= limit);
+  return 1 + (RNG_BUF[0] % n);
+}
+function rollSpecs(specs, crit) {
+  let total = 0; const parts = [];
+  for (const s of specs) {
+    const n = crit ? s.n * 2 : s.n, rolls = [];
+    for (let i = 0; i < n; i++) rolls.push(d(s.d));
+    const sum = rolls.reduce((a, b) => a + b, 0);
+    total += (s.neg ? -1 : 1) * sum;
+    parts.push({ ...s, n, rolls, sum });
+  }
+  return { total, parts };
+}
+function fmtParts(parts, flat) {
+  const out = parts.map((p, i) => `${i ? (p.neg ? " − " : " + ") : (p.neg ? "−" : "")}${p.n}d${p.d} [${p.rolls.join(", ")}]${p.t ? " " + p.t : ""}`).join("");
+  return out + (flat ? ` ${flat < 0 ? "−" : "+"} ${Math.abs(flat)}` : "");
+}
+function parseExpr(str) {
+  const clean = str.replace(/\s+/g, "").toLowerCase();
+  if (!clean || !/^[+-]?(\d*d\d+|\d+)([+-](\d*d\d+|\d+))*$/.test(clean)) return null;
+  const specs = []; let flat = 0;
+  for (const m of clean.matchAll(/([+-]?)(\d*d\d+|\d+)/g)) {
+    const neg = m[1] === "-", term = m[2];
+    if (term.includes("d")) {
+      const [n, dd] = term.split("d");
+      const cnt = Math.min(n === "" ? 1 : +n, 100), sides = +dd;
+      if (!cnt || !sides) return null;
+      specs.push({ n: cnt, d: sides, neg });
+    } else flat += neg ? -term : +term;
+  }
+  return { specs, flat };
+}
+
+/* advantage/disadvantage from effects + the one-shot tray toggle */
+function resolveMode(on, abil) {
+  const adv = [], dis = [];
+  for (const id of state.effects) {
+    for (const r of EFFECTS[id]?.roll || []) {
+      if (r.on === on && (!r.abil || r.abil === abil)) (r.m === "adv" ? adv : dis).push(EFFECTS[id].name);
+    }
+  }
+  if (nextMode === "adv") adv.push("manual");
+  if (nextMode === "dis") dis.push("manual");
+  const mode = adv.length && !dis.length ? "adv" : dis.length && !adv.length ? "dis" : "normal";
+  const src = mode === "adv" ? adv : mode === "dis" ? dis : (adv.length ? adv.concat(dis) : []);
+  return { mode, src, cancelled: adv.length && dis.length };
+}
+function d20(on, abil, bonus, forceMode) {
+  const r = forceMode ? { mode: forceMode, src: [] } : resolveMode(on, abil);
+  const a = d(20), b = r.mode === "normal" ? null : d(20);
+  const kept = r.mode === "adv" ? Math.max(a, b) : r.mode === "dis" ? Math.min(a, b) : a;
+  const other = b === null ? null : (kept === a ? b : a);
+  if (nextMode !== "normal") { nextMode = "normal"; renderMode(); }
+  let html = `d20 <b>${kept}</b>${other !== null ? ` <s>${other}</s>` : ""}${bonus ? ` ${bonus < 0 ? "−" : "+"} ${Math.abs(bonus)}` : ""}`;
+  let tag = r.mode === "adv" ? "adv" : r.mode === "dis" ? "dis" : "";
+  if (tag && r.src.filter(x => x !== "manual").length) tag += " · " + r.src.filter(x => x !== "manual").join(", ");
+  if (r.cancelled) tag = "adv + dis cancel";
+  return { kept, total: kept + bonus, html: html + (tag ? ` (${tag})` : ""), nat20: kept === 20, nat1: kept === 1 };
+}
+
+/* ---------- roll log ---------- */
+function addEntry(e) {
+  e.id = ++entrySeq; e.time = new Date();
+  logEntries.unshift(e);
+  if (logEntries.length > 80) logEntries.length = 80;
+  renderLog();
+  showToast(e);
+  return e;
+}
+function act(entryId, label, fn, disabled) {
+  const key = entryId + ":" + label;
+  logActions.set(key, fn);
+  return { key, label, disabled };
+}
+function renderLog() {
+  const el = document.getElementById("log");
+  if (!logEntries.length) { el.innerHTML = `<div class="log-empty">Click any bonus on the sheet to roll it. Results land here.</div>`; return; }
+  el.innerHTML = logEntries.map(e => {
+    const cls = ["entry", e.crit ? "crit" : "", e.fumble ? "fumble" : "", e.old ? "old" : ""].join(" ");
+    const nums = (e.nums || []).map(n => `<div class="n ${n.cls || ""}"><b>${n.v}</b><small>${esc(n.l)}</small></div>`).join("");
+    const acts = (e.actions ? e.actions() : []).map(a => `<button class="btn sm" data-log="${a.key}" ${a.disabled ? "disabled" : ""}>${esc(a.label)}</button>`).join("");
+    return `<div class="${cls}">
+      <div class="eh"><span class="et">${esc(e.title)}</span>${e.crit ? `<span class="badge">NAT 20</span>` : ""}${e.fumble ? `<span class="badge">NAT 1</span>` : ""}<span class="tm">${e.time.toTimeString().slice(0, 5)}</span></div>
+      ${e.sub ? `<div class="es">${esc(e.sub)}</div>` : ""}
+      ${nums ? `<div class="nums">${nums}</div>` : ""}
+      ${e.det ? `<div class="det">${e.det}</div>` : ""}
+      ${e.note ? `<div class="note">${e.note}</div>` : ""}
+      ${acts && !e.old ? `<div class="ea">${acts}</div>` : ""}
+    </div>`;
+  }).join("");
+}
+let toastTimer;
+function showToast(e) {
+  const t = document.getElementById("toast");
+  const main = (e.nums || [])[0];
+  t.innerHTML = `${main ? `<b>${main.v}</b>` : ""}<span>${esc(e.title)}${main ? " · " + esc(main.l) : ""}${e.nums && e.nums[1] ? ` · <strong>${e.nums[1].v}</strong> ${esc(e.nums[1].l)}` : ""}</span>`;
+  t.hidden = false;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { t.hidden = true; }, 3200);
+}
+function esc(s) { return String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])); }
+
+/* reroll helpers shared by rolls */
+function inspirationAction(e, redo) {
+  return act(e.id, "Reroll (Heroic Inspiration)", () => { if (!state.insp) return; state.insp = false; e.old = true; commit(); redo(); }, !state.insp);
+}
+
+/* ---------- roll types ---------- */
+function rollCheck(title, abil, bonus, opts = {}) {
+  const r = d20(opts.on || "check", abil, bonus, opts.force);
+  const redo = () => rollCheck(title, abil, bonus, opts);
+  const e = addEntry({
+    title, sub: opts.sub, crit: r.nat20, fumble: r.nat1,
+    nums: [{ v: r.total, l: opts.label || "total" }], det: r.html, note: opts.note,
+  });
+  e.actions = () => {
+    const a = [];
+    if ((opts.on || "check") === "check") a.push(act(e.id, "Failed? Reroll (1 SP)", () => { if (state.sp < 1) return; state.sp--; e.old = true; commit(); redo(); }, state.sp < 1));
+    a.push(inspirationAction(e, redo));
+    return a;
+  };
+  renderLog();
+  return r;
+}
+function rollSave(abil, opts = {}) {
+  return rollCheck((opts.title || ABIL_NAMES[abil] + " save"), abil, saveMod(abil), { on: "save", label: "save", ...opts });
+}
+
+function damageWithMods(dmg, extra) {
+  const specs = dmg.map(x => ({ ...x }));
+  if (extra && hasEff("enlarged")) specs.push({ n: 1, d: 4, t: "enlarge" });
+  if (extra && hasEff("reduced")) specs.push({ n: 1, d: 4, t: "reduce", neg: true });
+  return specs;
+}
+function rollAttack({ title, sub, bonus, dmg, flat = 0, spell = false, weapon = false, note, onHit }) {
+  const r = d20("attack", null, bonus);
+  const crit = r.nat20;
+  const specs = damageWithMods(dmg, weapon);
+  const dr = rollSpecs(specs, crit);
+  const total = specs.length || flat ? Math.max(weapon && hasEff("reduced") ? 1 : 0, dr.total + flat) : null;
+  const types = [...new Set(dmg.map(x => x.t))].join("/") || (weapon ? "" : "");
+  const redo = () => rollAttack({ title, sub, bonus, dmg, flat, spell, weapon, note, onHit });
+  const e = addEntry({
+    title, sub, crit, fumble: r.nat1,
+    nums: [{ v: r.total, l: "to hit" }].concat(total !== null ? [{ v: total, l: (crit ? "crit " : "") + (types ? types + " " : "") + "damage", cls: "dm" }] : []),
+    det: r.html + (total !== null ? " · " + fmtParts(dr.parts, flat) : ""),
+    note: (r.nat1 ? "Automatic miss. " : crit ? "Automatic hit, damage dice doubled. " : "") + (note || "")
+  });
+  e.actions = () => {
+    const a = [];
+    if (spell) a.push(act(e.id, "Missed? Seeking Spell (2 SP)", () => { if (state.sp < 2) return; state.sp -= 2; e.old = true; commit(); redo(); }, state.sp < 2));
+    a.push(inspirationAction(e, redo));
+    return a;
+  };
+  renderLog();
+}
+function rollSpellSave({ title, sub, save, dmg, noHalf, note, saveLabel }) {
+  const specs = dmg || [];
+  const dr = specs.length ? rollSpecs(specs) : null;
+  const nums = [{ v: SPELL_DC, l: (saveLabel || save) + " save DC" }];
+  if (dr) {
+    nums.push({ v: dr.total, l: [...new Set(specs.map(x => x.t))].join("/") + " on a fail", cls: "dm" });
+    if (!noHalf) nums.push({ v: Math.floor(dr.total / 2), l: "on a save" });
+  }
+  const e = addEntry({ title, sub, nums, det: dr ? fmtParts(dr.parts) : "", note });
+  e.actions = () => dr ? [act(e.id, "Reroll damage", () => { e.old = true; rollSpellSave({ title, sub, save, dmg, noHalf, note, saveLabel }); })] : [];
+  renderLog();
+}
+function rollFree(str, title) {
+  const p = parseExpr(str);
+  if (!p) { addEntry({ title: "Can't read that", note: `Try something like <b>2d6+3</b> or <b>d20+7</b>.` }); return; }
+  const onlyD20 = p.specs.length === 1 && p.specs[0].d === 20 && p.specs[0].n === 1 && !p.specs[0].neg;
+  if (onlyD20) {
+    const r = d20("raw", null, p.flat);
+    const e = addEntry({ title: title || str, crit: r.nat20, fumble: r.nat1, nums: [{ v: r.total, l: "total" }], det: r.html });
+    e.actions = () => [inspirationAction(e, () => rollFree(str, title))];
+    renderLog();
+    return;
+  }
+  const dr = rollSpecs(p.specs);
+  addEntry({ title: title || str, nums: [{ v: dr.total + p.flat, l: "total" }], det: fmtParts(dr.parts, p.flat) });
+}
+
+/* spell damage at a given slot level */
+function spellDmg(sp, level) {
+  return (sp.dmg || []).map(x => {
+    let n = x.n;
+    if (sp.scale) n = x.n * cantripDice;
+    if (x.up && level > sp.lvl) n += x.up * (level - sp.lvl);
+    return { n, d: x.d, t: x.t };
+  });
+}
+function castRoll(sp, level, via) {
+  const sub = (sp.lvl ? `Level ${level}` : "Cantrip") + (via ? " · " + via : "");
+  if (sp.roll === "attack") {
+    rollAttack({ title: sp.name, sub, bonus: SPELL_ATK, dmg: spellDmg(sp, level), spell: true,
+      note: sp.id === "shockingGrasp" ? "Advantage if the target wears metal armor (use the Advantage toggle)." : "" });
+  } else if (sp.roll === "save") {
+    rollSpellSave({ title: sp.name, sub, save: sp.save, saveLabel: sp.saveLabel, dmg: spellDmg(sp, level), noHalf: sp.noHalf,
+      note: sp.confusion ? "Use “Roll behaviour” on the spell card at the start of each affected creature's turn." : "" });
+  } else if (sp.roll === "chaos") {
+    rollChaos(level, sub);
+  } else if (sp.roll === "hunger") {
+    addEntry({ title: sp.name, sub, nums: [{ v: SPELL_DC, l: "DEX save DC" }], note: "Roll the turn damage from the spell card when creatures start or end their turn inside." });
+  } else {
+    addEntry({ title: sp.name, sub, note: esc(sp.desc) });
+  }
+}
+const CHAOS = ["acid", "cold", "fire", "force", "lightning", "poison", "psychic", "thunder"];
+function rollChaos(level, sub) {
+  const r = d20("attack", null, SPELL_ATK);
+  const mult = r.nat20 ? 2 : 1;
+  const d8s = []; for (let i = 0; i < 2 * mult; i++) d8s.push(d(8));
+  const d6n = (1 + (level - 1)) * mult, d6s = [];
+  for (let i = 0; i < d6n; i++) d6s.push(d(6));
+  const total = d8s.reduce((a, b) => a + b, 0) + d6s.reduce((a, b) => a + b, 0);
+  const t1 = CHAOS[d8s[0] - 1], t2 = CHAOS[d8s[1] - 1];
+  const leap = d8s[0] === d8s[1];
+  const e = addEntry({
+    title: "Chaos Bolt", sub, crit: r.nat20, fumble: r.nat1,
+    nums: [{ v: r.total, l: "to hit" }, { v: total, l: (t1 === t2 ? t1 : t1 + " or " + t2) + " damage", cls: "dm" }],
+    det: `${r.html} · d8 [${d8s.join(", ")}] + d6 [${d6s.join(", ")}]`,
+    note: (t1 === t2 ? `Type: <b>${t1}</b>. ` : `Choose type: <b>${t1}</b> or <b>${t2}</b>. `) + (leap ? `<b>Doubles!</b> It leaps to another creature within 30 ft: roll a new attack.` : "")
+  });
+  e.actions = () => {
+    const a = [];
+    if (leap) a.push(act(e.id, "Leap: roll new attack", () => rollChaos(level, sub + " · leap")));
+    a.push(act(e.id, "Missed? Seeking Spell (2 SP)", () => { if (state.sp < 2) return; state.sp -= 2; e.old = true; commit(); rollChaos(level, sub); }, state.sp < 2));
+    a.push(inspirationAction(e, () => rollChaos(level, sub)));
+    return a;
+  };
+  renderLog();
+}
+
+/* ---------- HP ---------- */
+function amt() {
+  const v = parseInt(document.getElementById("hpAmt").value, 10);
+  return Number.isFinite(v) && v > 0 ? v : 0;
+}
+function takeDamage(n, type) {
+  const notes = [];
+  let dmg = n;
+  const resist = type === "psychic" || (hasEff("bladeWard") && ["bludgeoning", "piercing", "slashing"].includes(type));
+  if (resist) { dmg = Math.floor(dmg / 2); notes.push(`Resistance (${type === "psychic" ? "Psychic Defenses" : "Blade Ward"}): ${n} → ${dmg}`); }
+  const wasDown = state.hp === 0;
+  let left = dmg;
+  if (state.temp > 0) { const used = Math.min(state.temp, left); state.temp -= used; left -= used; if (used) notes.push(`${used} absorbed by temp HP`); }
+  if (wasDown && dmg > 0) {
+    if (left >= state.maxHp) { notes.push("<b>Massive damage: instant death.</b>"); state.ds.f = 3; }
+    else { state.ds.f = Math.min(3, state.ds.f + 1); notes.push("Damage while down: 1 death save failure (2 if it was a critical hit)."); }
+  } else {
+    const before = state.hp;
+    state.hp = Math.max(0, state.hp - left);
+    const overflow = left - before;
+    if (state.hp === 0) {
+      if (overflow >= state.maxHp) notes.push("<b>Massive damage: instant death.</b>");
+      else notes.push("<b>You drop to 0 HP and fall unconscious.</b> Roll death saves at the start of your turns.");
+      if (state.conc) { notes.push(`Concentration on ${state.conc.name} ends.`); dropConc(true); }
+    }
+  }
+  const e = addEntry({ title: `Took ${dmg} ${type || ""} damage`.trim(), nums: [{ v: state.hp, l: `HP left of ${state.maxHp}`, cls: "dm" }], note: notes.join("<br>") });
+  if (state.conc && dmg > 0 && state.hp > 0) {
+    const dc = Math.max(10, Math.floor(dmg / 2));
+    e.note = (e.note ? e.note + "<br>" : "") + `Concentration check on <b>${esc(state.conc.name)}</b>: CON save DC ${dc}.`;
+    e.actions = () => [act(e.id, `Roll CON save (DC ${dc})`, () => { e.old = true; renderLog(); concSave(dc); })];
+    renderLog();
+  }
+  commit();
+}
+function concSave(dc, prevConc) {
+  const keep = prevConc || state.conc;
+  const r = d20("save", "CON", saveMod("CON"));
+  const ok = r.total >= dc;
+  const name = keep ? keep.name : "concentration";
+  if (!ok && state.conc) dropConc(true);
+  if (ok && !state.conc && keep) state.conc = keep;
+  const e = addEntry({ title: `Concentration: ${name}`, crit: r.nat20, fumble: r.nat1, nums: [{ v: r.total, l: ok ? `vs DC ${dc} · kept` : `vs DC ${dc} · lost`, cls: ok ? "ok" : "no" }], det: r.html,
+    note: ok ? "" : `${esc(name)} ends.` });
+  e.actions = () => [inspirationAction(e, () => concSave(dc, keep))];
+  commit();
+}
+function heal(n) {
+  if (!n) return;
+  const was = state.hp;
+  state.hp = Math.min(state.maxHp, state.hp + n);
+  if (was === 0 && state.hp > 0) state.ds = { s: 0, f: 0 };
+  addEntry({ title: `Healed ${state.hp - was}`, nums: [{ v: state.hp, l: `HP of ${state.maxHp}`, cls: "ok" }], note: was === 0 ? "You're back up. Death saves reset." : "" });
+  commit();
+}
+function addTemp(n) {
+  if (!n) return;
+  const was = state.temp;
+  state.temp = Math.max(state.temp, n);
+  addEntry({ title: "Temporary HP", nums: [{ v: state.temp, l: "temp HP" }], note: was && n <= was ? `Temp HP doesn't stack: kept your ${was}.` : (was ? `Replaced ${was} with ${n}.` : "") });
+  commit();
+}
+function deathSave() {
+  const r = d20("save", null, 0, "normal");
+  let note;
+  if (r.kept === 20) { state.hp = 1; state.ds = { s: 0, f: 0 }; note = "<b>Natural 20:</b> you regain 1 HP and wake up."; }
+  else if (r.kept === 1) { state.ds.f = Math.min(3, state.ds.f + 2); note = "Natural 1: two failures."; }
+  else if (r.kept >= 10) { state.ds.s = Math.min(3, state.ds.s + 1); note = "Success."; }
+  else { state.ds.f = Math.min(3, state.ds.f + 1); note = "Failure."; }
+  if (state.ds.s >= 3 && state.hp === 0) note += " <b>Three successes: you're stable.</b>";
+  if (state.ds.f >= 3) note += " <b>Three failures: you die.</b>";
+  addEntry({ title: "Death save", crit: r.nat20, fumble: r.nat1, nums: [{ v: r.kept, l: `${state.ds.s} ✓ · ${state.ds.f} ✗`, cls: r.kept >= 10 ? "ok" : "no" }], det: r.html, note });
+  commit();
+}
+function spendHitDie() {
+  if (state.hd < 1) return;
+  state.hd--;
+  const roll = d(HIT_DIE), gain = Math.max(0, roll + mod("CON"));
+  const was = state.hp;
+  state.hp = Math.min(state.maxHp, state.hp + gain);
+  addEntry({ title: "Hit die", nums: [{ v: state.hp - was, l: "HP regained", cls: "ok" }], det: `d6 [${roll}] ${sgn(mod("CON"))}`, note: `${state.hd} hit dice left · HP ${state.hp}/${state.maxHp}` });
+  commit();
+}
+
+/* ---------- concentration + spells ---------- */
+function dropConc(silent) {
+  if (!state.conc) return;
+  for (const id of state.conc.effects || []) setEff(id, false);
+  const n = state.conc.name;
+  state.conc = null;
+  if (!silent) { addEntry({ title: `Dropped ${n}`, note: "Concentration ended." }); commit(); }
+}
+function castOptions(sp) {
+  const opts = [];
+  if (sp.lvl === 0) { opts.push({ key: "cantrip", label: "Cast cantrip", level: 0, cost: 0 }); return opts; }
+  if (sp.free && state.free[sp.free]) opts.push({ key: "free", label: "Githyanki Psionics (free)", sub: "Once per long rest, no components", level: sp.lvl, cost: 0 });
+  if (sp.psi) opts.push({ key: "psi", label: `Psionic Sorcery: ${sp.lvl} sorcery point${sp.lvl > 1 ? "s" : ""}`, sub: "No verbal or somatic components", level: sp.lvl, sp: sp.lvl, ok: state.sp >= sp.lvl });
+  for (let l = sp.lvl; l <= 5; l++) {
+    const have = state.slots[l] || 0;
+    if (have > 0 || (l <= 4 && MAX_SLOTS[l] > 0)) opts.push({ key: "slot" + l, label: `Level ${l} slot${l > sp.lvl ? " (upcast)" : ""}`, sub: `${have} left`, level: l, slot: l, ok: have > 0 });
+  }
+  return opts;
+}
+function openCast(id) {
+  const sp = SPELL_BY_ID[id];
+  const opts = castOptions(sp);
+  const firstOk = opts.find(o => o.ok !== false);
+  const canCareful = sp.roll === "save" || sp.roll === "hunger";
+  const canDistant = sp.range !== "Self" && !sp.range.startsWith("Self");
+  const root = document.getElementById("modalRoot");
+  root.innerHTML = `<div class="modal-bg" data-act="closeModal"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="castTitle">
+    <h2 id="castTitle">Cast ${esc(sp.name)}</h2>
+    <div class="muted" style="font-size:14px">${esc(sp.time)} · ${esc(sp.range)}${sp.conc ? " · Concentration" : ""}</div>
+    ${sp.conc && state.conc ? `<div class="warn">This ends your concentration on ${esc(state.conc.name)}.</div>` : ""}
+    <div class="lbl">Pay with</div>
+    <div style="display:grid;gap:6px">${opts.map(o => `<label class="opt ${o.ok === false ? "dis" : ""}"><input type="radio" name="pay" id="pay-${o.key}" value="${o.key}" ${o === firstOk ? "checked" : ""} ${o.ok === false ? "disabled" : ""}><span>${esc(o.label)}${o.sub ? `<small>${esc(o.sub)}</small>` : ""}</span></label>`).join("")}</div>
+    ${canCareful || canDistant ? `<div class="lbl">Metamagic</div><div style="display:grid;gap:6px">
+      ${canCareful ? `<label class="opt"><input type="checkbox" id="mmCareful"><span>Careful Spell · 1 SP<small>Up to 4 chosen creatures auto-succeed on the save</small></span></label>` : ""}
+      ${canDistant ? `<label class="opt"><input type="checkbox" id="mmDistant"><span>Distant Spell · 1 SP<small>${sp.range === "Touch" ? "Touch becomes 30 ft" : "Double the range"}</small></span></label>` : ""}
+    </div>` : ""}
+    ${sp.effect ? `<label class="opt"><input type="checkbox" id="selfEff" checked><span>Apply to me<small>${esc(EFFECTS[sp.effect].desc)}</small></span></label>` : ""}
+    ${sp.selfPick ? `<div class="lbl">Target yourself?</div><div style="display:grid;gap:6px">
+      <label class="opt"><input type="radio" name="selfPick" value="" checked><span>No, another target</span></label>
+      ${sp.selfPick.map(k => `<label class="opt"><input type="radio" name="selfPick" value="${k}"><span>Me: ${esc(EFFECTS[k].name)}<small>${esc(EFFECTS[k].desc)}</small></span></label>`).join("")}</div>` : ""}
+    <div class="foot"><span class="cost" id="castCost"></span><button class="btn ghost" data-act="closeModal">Cancel</button><button class="btn primary" id="castGo" ${firstOk ? "" : "disabled"}>Cast</button></div>
+  </div></div>`;
+  const modal = root.querySelector(".modal");
+  const update = () => {
+    const key = modal.querySelector('input[name="pay"]:checked')?.value;
+    const o = opts.find(x => x.key === key);
+    const mm = (modal.querySelector("#mmCareful")?.checked ? 1 : 0) + (modal.querySelector("#mmDistant")?.checked ? 1 : 0);
+    const spCost = (o?.sp || 0) + mm;
+    const ok = !!o && spCost <= state.sp;
+    modal.querySelector("#castCost").innerHTML = spCost ? `Costs <b>${spCost}</b> of ${state.sp} SP` : (o?.slot ? `Uses a level ${o.slot} slot` : "Free");
+    modal.querySelector("#castGo").disabled = !ok;
+    return { o, mm, spCost };
+  };
+  modal.addEventListener("change", update);
+  update();
+  modal.querySelector("#castGo").addEventListener("click", () => {
+    const { o, spCost } = update();
+    if (!o || spCost > state.sp) return;
+    const mmNames = [modal.querySelector("#mmCareful")?.checked && "Careful", modal.querySelector("#mmDistant")?.checked && "Distant"].filter(Boolean);
+    const selfEff = sp.effect && modal.querySelector("#selfEff")?.checked ? sp.effect : (modal.querySelector('input[name="selfPick"]:checked')?.value || "");
+    closeModal();
+    doCast(sp, o, spCost, mmNames, selfEff);
+  });
+  modal.querySelector('input:not([disabled])')?.focus();
+}
+function doCast(sp, o, spCost, mm, selfEff) {
+  if (o.slot) state.slots[o.slot]--;
+  if (o.key === "free") state.free[sp.free] = false;
+  state.sp -= spCost;
+  const linked = [];
+  if (selfEff) { setEff(selfEff, true); if (sp.conc) linked.push(selfEff); }
+  if (sp.conc) {
+    if (state.conc) dropConc(true);
+    state.conc = { id: sp.id, name: sp.name, effects: linked };
+  }
+  const via = [o.key === "free" ? "Githyanki Psionics" : o.key === "psi" ? "Psionic Sorcery" : "", mm.length ? mm.join(" + ") + " Spell" : "", spCost ? `−${spCost} SP` : ""].filter(Boolean).join(" · ");
+  castRoll(sp, o.level || sp.lvl, via);
+  commit();
+}
+function quickCantrip(id) { const sp = SPELL_BY_ID[id]; castRoll(sp, 0, ""); }
+
+/* ---------- font of magic ---------- */
+function slotToSp(l) {
+  if (!(state.slots[l] > 0)) return;
+  const gain = Math.min(l, SP_MAX - state.sp);
+  state.slots[l]--; state.sp += gain;
+  addEntry({ title: `Level ${l} slot → sorcery points`, nums: [{ v: state.sp, l: `SP (+${gain})` }], note: gain < l ? `Capped at your max of ${SP_MAX}; ${l - gain} point(s) lost.` : "Bonus action." });
+  commit();
+}
+function spToSlot(l) {
+  const c = SP_COST[l];
+  if (state.sp < c) return;
+  state.sp -= c; state.slots[l] = (state.slots[l] || 0) + 1;
+  addEntry({ title: `Created a level ${l} slot`, nums: [{ v: state.sp, l: `SP left (−${c})` }], note: "Bonus action. Created slots vanish on a long rest." });
+  commit();
+}
+
+/* ---------- rests ---------- */
+function openRest(kind) {
+  const root = document.getElementById("modalRoot");
+  if (kind === "short") {
+    root.innerHTML = `<div class="modal-bg" data-act="closeModal"><div class="modal" role="dialog" aria-modal="true"><h2>Short rest</h2>
+      <p style="margin:0">Spend hit dice to heal: each is 1d6 ${sgn(mod("CON"))}.</p>
+      <div class="hp-row"><span class="hp-label">HP</span><span class="hp-big" style="font-size:26px">${state.hp}<small>/${state.maxHp}</small></span></div>
+      <div class="foot"><span class="cost">${state.hd} of ${LEVEL} hit dice left</span><button class="btn ghost" data-act="closeModal">Done</button><button class="btn primary" data-act="hitDie" ${state.hd < 1 || state.hp >= state.maxHp ? "disabled" : ""}>Spend a hit die</button></div></div></div>`;
+  } else {
+    const regain = Math.max(1, Math.floor(LEVEL / 2));
+    root.innerHTML = `<div class="modal-bg" data-act="closeModal"><div class="modal" role="dialog" aria-modal="true"><h2>Long rest</h2>
+      <ul style="margin:0;padding-left:18px;display:grid;gap:4px">
+        <li>HP back to ${state.maxHp}, temp HP cleared</li>
+        <li>All spell slots restored; created slots vanish</li>
+        <li>Sorcery points back to ${SP_MAX}</li>
+        <li>Regain ${regain} hit dice (up to ${LEVEL})</li>
+        <li>Free Jump and Misty Step recharge</li>
+        <li>Spell effects and concentration end; pick a new Astral Knowledge skill</li>
+      </ul>
+      <div class="foot"><button class="btn ghost" data-act="closeModal">Cancel</button><button class="btn primary" data-act="longRest">Take long rest</button></div></div></div>`;
+  }
+}
+function longRest() {
+  const regain = Math.max(1, Math.floor(LEVEL / 2));
+  state.hp = state.maxHp; state.temp = 0;
+  state.slots = { ...MAX_SLOTS }; state.sp = SP_MAX;
+  state.hd = Math.min(LEVEL, state.hd + regain);
+  state.free = { jump: true, misty: true };
+  state.ds = { s: 0, f: 0 }; state.conc = null;
+  state.effects = state.effects.filter(id => EFFECTS[id].kind === "cond");
+  state.astral = "";
+  closeModal();
+  addEntry({ title: "Long rest", note: "Everything restored. Pick today's Astral Knowledge skill on the Character tab." });
+  commit();
+}
+function closeModal() { document.getElementById("modalRoot").innerHTML = ""; }
+
+/* ---------- rendering ---------- */
+function gem(on, cls, act, title) {
+  return `<button class="gem ${cls} ${on ? "" : "off"}" data-act="${act}" title="${title}" aria-label="${title}"><svg viewBox="0 0 20 20"><path class="fill" d="M10 2 L18 10 L10 18 L2 10 Z"/><path class="edge" d="M10 2 L18 10 L10 18 L2 10 Z"/></svg></button>`;
+}
+function renderTop() {
+  const { ac, why } = acInfo();
+  document.getElementById("acVal").textContent = ac;
+  document.getElementById("acWhy").textContent = why;
+  document.getElementById("hpBig").innerHTML = `${state.hp}<small>/${state.maxHp}</small>`;
+  document.getElementById("hpTmp").textContent = state.temp ? `+${state.temp} temp` : "";
+  const tot = Math.max(state.maxHp, state.hp + state.temp);
+  document.getElementById("hpFill").style.width = (state.hp / tot * 100) + "%";
+  document.getElementById("tmpFill").style.width = (state.temp / tot * 100) + "%";
+  const dy = document.getElementById("dyingBox");
+  if (state.hp === 0) {
+    const p = (n, c) => Array.from({ length: 3 }, (_, i) => `<span class="pip ${c} ${i < n ? "on" : ""}"></span>`).join("");
+    dy.innerHTML = `<div class="dying"><b>${state.ds.f >= 3 ? "Dead" : state.ds.s >= 3 ? "Stable" : "Dying"}</b><span>Successes <span class="pips">${p(state.ds.s, "s")}</span></span><span>Failures <span class="pips">${p(state.ds.f, "f")}</span></span><button class="btn sm" data-act="deathSave" ${state.ds.f >= 3 || state.ds.s >= 3 ? "disabled" : ""}>Roll death save</button></div>`;
+  } else dy.innerHTML = "";
+  const init = mod("DEX");
+  document.getElementById("quick").innerHTML = `
+    <button class="chip" data-act="init"><small>Initiative</small><b>${sgn(init)}</b></button>
+    <div class="chip"><small>Speed</small><b>30 ft</b></div>
+    <div class="chip"><small>Prof.</small><b>+${PROF}</b></div>
+    <div class="chip"><small>Passive Perc.</small><b>${10 + skillMod("Perception", "WIS", 1)}</b></div>
+    <div class="chip"><small>Spell DC</small><b>${SPELL_DC}</b></div>
+    <button class="chip" data-act="rollRaw" data-expr="d20+${SPELL_ATK}" data-title="Spell attack"><small>Spell attack</small><b>+${SPELL_ATK}</b></button>
+    <button class="chip" data-act="insp" aria-pressed="${state.insp}" title="Heroic Inspiration: click to toggle"><small>Inspiration</small><b style="color:${state.insp ? "var(--gold)" : "var(--muted)"}">${state.insp ? "★" : "☆"}</b></button>
+    <button class="btn" data-act="restShort" style="height:auto">Short rest</button>
+    <button class="btn" data-act="restLong" style="height:auto">Long rest</button>`;
+}
+function renderCombat() {
+  const slotRows = [1, 2, 3, 4, 5].filter(l => MAX_SLOTS[l] || state.slots[l]).map(l => {
+    const max = MAX_SLOTS[l], cur = state.slots[l] || 0, n = Math.max(max, cur);
+    let g = "";
+    for (let i = 0; i < n; i++) g += gem(i < cur, i >= max ? "extra" : "", `slot:${l}:${i}`, `Level ${l} slot ${i + 1}`);
+    return `<div class="slot-row"><span class="lv">Lv ${l}</span><span>${g}</span><span class="muted num" style="margin-left:auto;font-size:13px">${cur}/${max}</span></div>`;
+  }).join("");
+  let spg = "";
+  for (let i = 0; i < SP_MAX; i++) spg += gem(i < state.sp, "sp", `sp:${i}`, `Sorcery point ${i + 1}`);
+  const slotSel = [1, 2, 3, 4, 5].filter(l => state.slots[l] > 0).map(l => `<option value="${l}">Lv ${l} slot → ${Math.min(l, SP_MAX - state.sp)} SP</option>`).join("");
+  const mkSel = [1, 2, 3, 4, 5].map(l => `<option value="${l}" ${state.sp < SP_COST[l] ? "disabled" : ""}>${SP_COST[l]} SP → Lv ${l} slot</option>`).join("");
+
+  const effs = Object.entries(EFFECTS).filter(([, e]) => e.kind === "buff").map(([k, e]) => `<button class="toggle" data-act="eff:${k}" aria-pressed="${hasEff(k)}" title="${esc(e.desc)}"><span class="dot"></span>${e.name}</button>`).join("");
+  const conds = Object.entries(EFFECTS).filter(([, e]) => e.kind === "cond").map(([k, e]) => `<button class="toggle cond" data-act="eff:${k}" aria-pressed="${hasEff(k)}" title="${esc(e.desc)}"><span class="dot"></span>${e.name}</button>`).join("");
+  const active = state.effects.map(k => `<div><b>${EFFECTS[k].name}</b><span class="muted">${EFFECTS[k].desc}</span></div>`).join("");
+
+  const wRows = WEAPONS.map((w, i) => {
+    const ab = w.abil === "fin" ? (mod("DEX") >= mod("STR") ? "DEX" : "STR") : w.abil;
+    const hit = mod(ab) + PROF;
+    const flat = w.flatDmg ? w.flatDmg + mod(ab) : mod(ab);
+    const dmgTxt = w.dmg.length ? w.dmg.map(x => `${x.n}d${x.d}`).join("+") + (flat ? sgn(flat) : "") : String(Math.max(1, flat));
+    return `<div class="row"><div><div class="nm">${w.name}${w.ammo ? ` <span class="small-tag">${state.bolts} bolts</span>` : ""}</div><div class="meta">${w.meta} · ${dmgTxt} ${w.dmg[0]?.t || w.type}</div></div>
+      <button class="rollbtn" data-act="weapon:${i}">${sgn(hit)}</button>
+      ${w.alt ? `<button class="rollbtn" data-act="weapon:${i}:alt" title="Two-handed">${w.alt.label}</button>` : `<span></span>`}</div>`;
+  }).join("");
+  const cRows = SPELLS.filter(s => s.lvl === 0 && s.roll !== "none").map(s => {
+    const dd = spellDmg(s, 0).map(x => `${x.n}d${x.d} ${x.t}`).join(" + ");
+    return `<div class="row"><div><div class="nm">${s.name}${s.psi ? ` <span class="small-tag tag-p">psionic</span>` : ""}</div><div class="meta">${s.range} · ${dd}</div></div>
+      <button class="rollbtn" data-act="cantrip:${s.id}">${s.roll === "attack" ? "+" + SPELL_ATK : "DC " + SPELL_DC}</button><span></span></div>`;
+  }).join("");
+
+  document.getElementById("tab-combat").innerHTML = `<div class="stack">
+    <div class="grid2">
+      <div class="panel">
+        <h2>Spell slots <span class="aside">click a gem to spend or restore</span></h2>
+        <div class="slots">${slotRows}</div>
+        <h2 style="margin-top:14px">Sorcery points <span class="aside num">${state.sp}/${SP_MAX}</span></h2>
+        <div>${spg}</div>
+        <div class="fom">
+          <div class="lbl">Font of Magic (bonus action)</div>
+          <div class="fom-row"><select id="selSlotToSp" aria-label="Slot to convert" ${slotSel ? "" : "disabled"}>${slotSel || "<option>No slots left</option>"}</select><button class="btn sm" data-act="slotToSp" ${slotSel && state.sp < SP_MAX ? "" : "disabled"}>Convert</button></div>
+          <div class="fom-row"><select id="selSpToSlot" aria-label="Slot to create">${mkSel}</select><button class="btn sm" data-act="spToSlot">Create</button></div>
+        </div>
+        <div class="free">
+          <span class="lbl" style="align-self:center">Githyanki Psionics</span>
+          <button class="toggle" data-act="free:jump" aria-pressed="${state.free.jump}"><span class="dot"></span>Jump ${state.free.jump ? "ready" : "used"}</button>
+          <button class="toggle" data-act="free:misty" aria-pressed="${state.free.misty}"><span class="dot"></span>Misty Step ${state.free.misty ? "ready" : "used"}</button>
+        </div>
+      </div>
+      <div class="panel">
+        <h2>Effects &amp; conditions <button class="btn sm ghost" data-act="newTurn" style="margin-left:auto" title="Ends Shield">Start of my turn</button></h2>
+        ${state.conc ? `<div class="conc"><span class="lbl" style="color:var(--fg)">Concentrating</span><b>${esc(state.conc.name)}</b><button class="btn sm" data-act="dropConc" style="margin-left:auto">Drop</button></div>` : ""}
+        <div class="lbl" style="margin-bottom:6px">Spells on me</div>
+        <div class="effects">${effs}</div>
+        <div class="lbl" style="margin:12px 0 6px">Conditions</div>
+        <div class="effects">${conds}</div>
+        ${active ? `<div class="active-list">${active}</div>` : `<p class="muted" style="font-size:14px;margin:10px 0 0">Active effects change your AC and add advantage or disadvantage to rolls automatically.</p>`}
+        <div class="lbl" style="margin:12px 0 4px">Defenses</div>
+        <div style="font-size:14px">Resistant to <b>psychic</b>. Advantage on saves against being <b>charmed</b> or <b>frightened</b>:
+          <button class="btn sm" data-act="saveVsFear" style="margin-left:4px">Roll WIS save with adv.</button></div>
+      </div>
+    </div>
+    <div class="grid2">
+      <div class="panel"><h2>Weapons</h2><div class="rows">${wRows}</div></div>
+      <div class="panel"><h2>Attack cantrips <span class="aside">level ${LEVEL}: ${cantripDice} dice</span></h2><div class="rows">${cRows}</div></div>
+    </div>
+    <div class="panel"><h2>On your turn</h2>
+      <div class="grid2" style="font-size:14.5px">
+        <div><div class="lbl">Bonus actions</div><p style="margin:4px 0 10px">Misty Step · Font of Magic (convert or create slots) · Telepathic Speech</p>
+             <div class="lbl">Reactions</div><p style="margin:4px 0 0">Shield (+5 AC) · Opportunity attack</p></div>
+        <div><div class="lbl">Free</div><p style="margin:4px 0 10px">Magical Guidance (1 SP, reroll a failed check) · Seeking Spell (2 SP, reroll a missed spell attack). Both show up as buttons on the roll.</p>
+             <div class="lbl">Hit dice</div><p style="margin:4px 0 0"><span class="num">${state.hd}/${LEVEL}</span> d6 · <button class="btn sm" data-act="hitDie" ${state.hd < 1 || state.hp >= state.maxHp ? "disabled" : ""}>Spend one</button></p></div>
+      </div>
+    </div>
+  </div>`;
+}
+function spellEffectText(s) {
+  const bits = [];
+  if (s.roll === "attack" || s.roll === "chaos") bits.push(`Attack +${SPELL_ATK}`);
+  if (s.roll === "save") bits.push(`${s.save} save DC ${SPELL_DC}`);
+  if (s.roll === "hunger") bits.push(`DEX save DC ${SPELL_DC}`);
+  if (s.roll === "chaos") bits.push("2d8 + 1d6 random");
+  else if (s.roll === "hunger") bits.push("2d6 cold + 2d6 acid");
+  else if (s.dmg) bits.push(spellDmg(s, Math.max(1, s.lvl)).map(x => `${x.n}d${x.d} ${x.t}`).join(" + "));
+  if (s.effect) bits.push(EFFECTS[s.effect].name === "Mage Armor" ? `AC ${13 + mod("DEX")}` : EFFECTS[s.effect].name === "Shield" ? "+5 AC" : "Resist weapons");
+  return bits.join(" · ") || "—";
+}
+function spellUpText(s) {
+  if (s.roll === "chaos" || (s.dmg || []).some(x => x.up)) return "+1d6 per higher slot";
+  if (s.scale) return `${cantripDice}× dice at level ${LEVEL}`;
+  return "";
+}
+function spellCostHtml(s) {
+  if (!s.lvl) return `<span class="cost-free">At will</span>`;
+  const have = state.slots[s.lvl] || 0;
+  const higher = [s.lvl + 1, s.lvl + 2, s.lvl + 3, s.lvl + 4].filter(l => l <= 5 && state.slots[l] > 0).length;
+  const out = [`<span class="cost-slot ${have ? "" : "empty"}">Lv ${s.lvl} slot <b class="num">${have}</b> left${!have && higher ? " (upcast only)" : ""}</span>`];
+  if (s.psi) out.push(`<span class="cost-sp ${state.sp >= s.lvl ? "" : "empty"}">or ${s.lvl} SP</span>`);
+  if (s.free) out.push(`<span class="cost-free ${state.free[s.free] ? "" : "empty"}">or free ${state.free[s.free] ? "(ready)" : "(used)"}</span>`);
+  return out.join("");
+}
+function renderSpellOverview(list) {
+  const groups = [0, 1, 2, 3, 4].map(l => list.filter(s => s.lvl === l)).filter(g => g.length);
+  const head = `<div class="sp-row sp-head" aria-hidden="true"><span>Spell</span><span>Cost</span><span>Time</span><span>Range · Duration</span><span>Does</span><span></span></div>`;
+  return groups.map(g => {
+    const l = g[0].lvl;
+    const slotInfo = l ? `<span class="num">${state.slots[l]}/${MAX_SLOTS[l]}</span> slots left` : "No slot needed";
+    return `<section class="sp-group">
+      <h3 class="sp-gh"><span>${l ? "Level " + l : "Cantrips"}</span><span class="muted">${slotInfo}</span></h3>
+      <div class="sp-table">${head}${g.map(s => {
+        const castable = castOptions(s).some(o => o.ok !== false);
+        const open = openSpells.has(s.id);
+        const tags = [s.conc && `<span class="small-tag tag-c" title="Concentration">C</span>`, s.psi && `<span class="small-tag tag-p" title="Psionic: can pay with sorcery points">Psi</span>`, `<span class="small-tag">${s.role}</span>`].filter(Boolean).join("");
+        const up = spellUpText(s);
+        return `<div class="sp-row ${castable ? "" : "off"}">
+          <div class="sp-name"><button class="sp-toggle" data-act="spOpen:${s.id}" aria-expanded="${open}"><b>${s.name}</b><span class="chev">${open ? "▾" : "▸"}</span></button><div class="tags">${tags}</div><div class="sp-sum">${esc(s.sum)}</div></div>
+          <div class="sp-cost">${spellCostHtml(s)}</div>
+          <div class="sp-time"><span class="mlbl">Time</span>${s.time}</div>
+          <div class="sp-rd"><span class="mlbl">Range</span>${s.range}<br><span class="muted">${s.dur}</span></div>
+          <div class="sp-does"><span class="mlbl">Does</span>${spellEffectText(s)}${up ? `<br><span class="muted">${up}</span>` : ""}</div>
+          <div class="sp-go"><button class="btn sm primary" data-act="cast:${s.id}" ${castable ? "" : "disabled"}>Cast</button></div>
+          ${open ? `<div class="sp-more"><p>${esc(s.desc)}</p><div class="muted" style="font-size:13px">Components: ${s.comp}${s.psi && s.lvl ? " (none needed with sorcery points)" : ""}</div>${spellExtraButtons(s)}</div>` : ""}
+        </div>`;
+      }).join("")}</div></section>`;
+  }).join("");
+}
+function spellExtraButtons(s) {
+  const b = [];
+  if (s.roll === "hunger") b.push(`<button class="btn sm" data-act="hunger:cold">Start of turn: 2d6 cold</button>`, `<button class="btn sm" data-act="hunger:acid">End of turn: 2d6 acid</button>`);
+  if (s.id === "evardsTentacles") b.push(`<button class="btn sm" data-act="evards">Roll 3d6 bludgeoning</button>`);
+  if (s.confusion) b.push(`<button class="btn sm" data-act="confusion">Roll behaviour (d10)</button>`);
+  if (s.extra) b.push(`<button class="btn sm" data-act="rollRaw" data-expr="${s.extra.dice}" data-title="${esc(s.name)} penalty">${s.extra.label}</button>`);
+  return b.length ? `<div class="acts" style="margin-top:6px">${b.join("")}</div>` : "";
+}
+function renderSpells() {
+  const levels = ["all", 0, 1, 2, 3, 4];
+  const list = SPELLS.filter(s => (spellFilter === "all" || s.lvl === +spellFilter) && (roleFilter === "all" || s.role === roleFilter));
+  const resBar = `<div class="panel sp-res">
+      ${[1, 2, 3, 4].map(l => { let g = ""; for (let i = 0; i < Math.max(MAX_SLOTS[l], state.slots[l]); i++) g += `<i class="${i < state.slots[l] ? "on" : ""}"></i>`; return `<div><span class="lbl">Lv ${l}</span><span class="mini">${g}</span></div>`; }).join("")}
+      <div><span class="lbl">Sorcery pts</span><span class="mini sp">${Array.from({ length: SP_MAX }, (_, i) => `<i class="${i < state.sp ? "on" : ""}"></i>`).join("")}</span></div>
+      <div><span class="lbl">Concentrating</span><span style="font-size:14px">${state.conc ? `<b>${esc(state.conc.name)}</b>` : `<span class="muted">nothing</span>`}</span></div>
+      <div><span class="lbl">Attack · DC</span><span class="num" style="font-weight:600">+${SPELL_ATK} · ${SPELL_DC}</span></div>
+    </div>`;
+  const filters = `<div class="filters">
+      <div class="seg">${["overview", "cards"].map(v => `<button data-act="spView:${v}" aria-pressed="${spellView === v}">${v === "overview" ? "Overview" : "Full cards"}</button>`).join("")}</div>
+      ${levels.map(l => `<button class="toggle" data-act="filter:${l}" aria-pressed="${String(spellFilter) === String(l)}">${l === "all" ? "All levels" : l === 0 ? "Cantrips" : "Lv " + l}</button>`).join("")}
+    </div>
+    <div class="filters">${["all", ...ROLES].map(r => `<button class="toggle" data-act="role:${r}" aria-pressed="${roleFilter === r}">${r === "all" ? "Any use" : r}</button>`).join("")}</div>`;
+  if (spellView === "overview") {
+    document.getElementById("tab-spells").innerHTML = resBar + filters + (list.length ? renderSpellOverview(list) : `<p class="muted">No spells match.</p>`);
+    return;
+  }
+  const card = s => {
+    const tags = [s.conc && `<span class="small-tag tag-c">Concentration</span>`, s.psi && `<span class="small-tag tag-p">Psionic</span>`, s.free && `<span class="small-tag tag-r">Free 1/long rest</span>`].filter(Boolean).join("");
+    let extra = "";
+    if (s.roll === "attack" || s.roll === "chaos") extra += `<span class="muted" style="font-size:13px">Spell attack +${SPELL_ATK}</span>`;
+    if (s.roll === "save") extra += `<span class="muted" style="font-size:13px">${s.saveLabel || s.save} save DC ${SPELL_DC}</span>`;
+    if (s.dmg) extra += `<span class="muted" style="font-size:13px">· ${spellDmg(s, Math.max(1, s.lvl)).map(x => `${x.n}d${x.d} ${x.t}`).join(" + ")}${s.dmg.some(x => x.up) ? " (+1d6 per level up)" : ""}</span>`;
+    const canCast = castOptions(s).some(o => o.ok !== false);
+    return `<article class="spell">
+      <div class="top"><span class="lvl">${s.lvl ? "LEVEL " + s.lvl : "CANTRIP"}</span><h3>${s.name}</h3><div class="tags">${tags}</div></div>
+      <div class="facts"><span><b>${s.time}</b></span><span>Range <b>${s.range}</b></span><span>Duration <b>${s.dur}</b></span><span>${s.comp}</span></div>
+      <div class="sp-cost">${spellCostHtml(s)}</div>
+      <p>${esc(s.desc)}</p>
+      <div class="acts"><button class="btn sm primary" data-act="cast:${s.id}" ${canCast ? "" : "disabled"}>${s.lvl ? "Cast…" : "Cast"}</button>
+        ${extra}</div>${spellExtraButtons(s)}
+    </article>`;
+  };
+  document.getElementById("tab-spells").innerHTML = resBar + filters + `<div class="spells">${list.map(card).join("")}</div>`;
+}
+function renderChar() {
+  const abils = Object.keys(ABIL).map(a => `<button class="abil" data-act="check:${a}" title="${ABIL_NAMES[a]} check"><small>${a}</small><b>${sgn(mod(a))}</b><span>${ABIL[a]}</span></button>`).join("");
+  const saves = Object.keys(ABIL).map(a => `<button class="sk" data-act="save:${a}"><span class="p ${SAVE_PROF.includes(a) ? "on" : ""}"></span><span class="m">${sgn(saveMod(a))}</span><span>${ABIL_NAMES[a]}</span><span class="a">SAVE</span></button>`).join("");
+  const skills = SKILLS.map(([n, a, p]) => `<button class="sk" data-act="skill:${n}"><span class="p ${p ? "on" : astralProf(n) ? "astral" : ""}"></span><span class="m">${sgn(skillMod(n, a, p))}</span><span>${n}</span><span class="a">${a}</span></button>`).join("");
+  const astralOpts = SKILLS.filter(s => !s[2]).map(([n]) => `<option ${state.astral === n ? "selected" : ""}>${n}</option>`).join("");
+  const feat = ([n, src, txt]) => `<div class="feat"><h3>${n}<span class="src">${src}</span></h3><p>${txt}</p></div>`;
+  document.getElementById("tab-char").innerHTML = `<div class="stack">
+    <div class="panel"><h2>Abilities <span class="aside">click to roll a check</span></h2><div class="abils">${abils}</div></div>
+    <div class="grid2">
+      <div class="panel"><h2>Skills</h2>
+        <div class="fom-row" style="margin-bottom:8px"><label class="lbl" for="astralSel">Astral Knowledge today</label>
+          <select id="astralSel" style="height:30px;border:1px solid var(--line);border-radius:7px;background:var(--panel-2);color:var(--fg);font:inherit;font-size:14px"><option value="">None picked</option>${astralOpts}</select></div>
+        <div class="skills">${skills}</div></div>
+      <div class="stack">
+        <div class="panel"><h2>Saving throws</h2><div>${saves}</div></div>
+        <div class="panel"><h2>Hit points</h2>
+          <div class="fom-row"><label for="maxHpIn">Max HP</label><input id="maxHpIn" type="number" min="1" value="${state.maxHp}" style="width:80px;height:32px;border:1px solid var(--line);border-radius:7px;background:var(--panel-2);color:var(--fg);font-family:var(--f-num);padding:0 8px"><span class="muted" style="font-size:13px">Hit dice ${LEVEL}d6 · CON ${sgn(mod("CON"))}</span></div>
+        </div>
+        <div class="panel"><h2>Proficiencies</h2>
+          <div style="font-size:14.5px;display:grid;gap:4px">
+            <div><span class="lbl">Weapons</span> Dagger, dart, sling, quarterstaff, light crossbow</div>
+            <div><span class="lbl">Tools</span> Bagpipes, poisoner's kit</div>
+            <div><span class="lbl">Languages</span> Common, Celestial, Primordial</div>
+          </div></div>
+      </div>
+    </div>
+    <div class="grid2">
+      <div class="panel"><h2>Class features</h2>${FEATURES.map(feat).join("")}</div>
+      <div class="panel"><h2>Species &amp; background</h2>${TRAITS.map(feat).join("")}</div>
+    </div>
+  </div>`;
+}
+function renderInv() {
+  const coins = ["cp", "sp", "ep", "gp", "pp"].map(c => `<label class="coin"><span class="lbl">${c.toUpperCase()}</span><input id="coin-${c}" type="number" min="0" value="${state.coins[c]}" data-coin="${c}"></label>`).join("");
+  document.getElementById("coins").innerHTML = coins;
+  const items = ITEMS.map(([n, w, q]) => `<div class="item"><span>${n}</span><span class="w">${q > 1 ? "×" + q : ""}</span><span class="w">${+(w * q).toFixed(1)} lb</span></div>`).join("")
+    + `<div class="item"><span>Crossbow bolts</span><span class="counter"><button data-act="bolts:-1" aria-label="One fewer bolt">−</button><b class="num">${state.bolts}</b><button data-act="bolts:1" aria-label="One more bolt">+</button></span><span class="w">${+(state.bolts * 0.075).toFixed(1)} lb</span></div>`;
+  document.getElementById("items").innerHTML = items;
+  const wt = ITEMS.reduce((a, [, w, q]) => a + w * q, 0) + state.bolts * 0.075;
+  document.getElementById("weight").textContent = `${wt.toFixed(1)} / ${ABIL.STR * 15} lb`;
+  const notes = document.getElementById("notes");
+  if (document.activeElement !== notes) notes.value = state.notes || "";
+  document.getElementById("resetBtn").textContent = resetArmed ? "Click again to reset everything" : "Reset sheet to defaults";
+}
+function renderMode() {
+  document.querySelectorAll("#modeBox button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.mode === nextMode)));
+}
+function renderAll() { renderTop(); renderCombat(); renderSpells(); renderChar(); renderInv(); renderMode(); }
+
+/* ---------- events ---------- */
+document.addEventListener("click", ev => {
+  const logBtn = ev.target.closest("[data-log]");
+  if (logBtn) { const fn = logActions.get(logBtn.dataset.log); if (fn) fn(); return; }
+  const die = ev.target.closest("[data-die]");
+  if (die) {
+    const inp = document.getElementById("expr"), n = die.dataset.die;
+    const re = new RegExp(`(^|[+])(\\d*)d${n}(?![0-9])`);
+    const m = inp.value.match(re);
+    if (m) inp.value = inp.value.replace(re, `${m[1]}${(+m[2] || 1) + 1}d${n}`);
+    else inp.value = inp.value ? inp.value + "+1d" + n : "1d" + n;
+    return;
+  }
+  const md = ev.target.closest("[data-mode]");
+  if (md) { nextMode = nextMode === md.dataset.mode ? "normal" : md.dataset.mode; renderMode(); return; }
+  const tab = ev.target.closest("[data-tab]");
+  if (tab) {
+    document.querySelectorAll("[data-tab]").forEach(t => t.setAttribute("aria-selected", String(t === tab)));
+    ["combat", "spells", "char", "inv"].forEach(k => document.getElementById("tab-" + k).hidden = k !== tab.dataset.tab);
+    try { localStorage.setItem("thrandir-tab", tab.dataset.tab); } catch (e) {}
+    return;
+  }
+  const el = ev.target.closest("[data-act]");
+  if (!el) return;
+  if (el.classList.contains("modal-bg") && ev.target !== el) return;
+  const [a, b, c] = el.dataset.act.split(":");
+  switch (a) {
+    case "damage": { const n = amt(); if (n) takeDamage(n, document.getElementById("dmgType").value); document.getElementById("hpAmt").value = ""; break; }
+    case "heal": heal(amt()); document.getElementById("hpAmt").value = ""; break;
+    case "temp": addTemp(amt()); document.getElementById("hpAmt").value = ""; break;
+    case "deathSave": deathSave(); break;
+    case "hitDie": spendHitDie(); if (document.querySelector(".modal")) openRest("short"); break;
+    case "init": rollCheck("Initiative", "DEX", mod("DEX"), { label: "initiative" }); break;
+    case "insp": state.insp = !state.insp; commit(); break;
+    case "restShort": openRest("short"); break;
+    case "restLong": openRest("long"); break;
+    case "longRest": longRest(); break;
+    case "closeModal": closeModal(); break;
+    case "slot": {
+      const l = +b, i = +c, cur = state.slots[l];
+      state.slots[l] = i < cur ? cur - 1 : Math.min(MAX_SLOTS[l], cur + 1);
+      commit(); break;
+    }
+    case "sp": { const i = +b; state.sp = i < state.sp ? state.sp - 1 : Math.min(SP_MAX, state.sp + 1); commit(); break; }
+    case "slotToSp": slotToSp(+document.getElementById("selSlotToSp").value); break;
+    case "spToSlot": spToSlot(+document.getElementById("selSpToSlot").value); break;
+    case "free": state.free[b] = !state.free[b]; commit(); break;
+    case "eff": {
+      setEff(b, !hasEff(b));
+      if (b === "incapacitated" && hasEff(b) && state.conc) { addEntry({ title: `Lost concentration on ${state.conc.name}`, note: "Incapacitated." }); dropConc(true); }
+      commit(); break;
+    }
+    case "newTurn": if (hasEff("shield")) { setEff("shield", false); addEntry({ title: "Start of turn", note: "Shield ends." }); } commit(); break;
+    case "dropConc": dropConc(); break;
+    case "saveVsFear": rollSave("WIS", { title: "WIS save vs charm/fear", force: "adv", sub: "Psychic Defenses" }); break;
+    case "weapon": {
+      const w = WEAPONS[+b];
+      if (w.ammo) { if (state.bolts < 1) { addEntry({ title: "Out of bolts", note: "Add more on the Inventory tab." }); break; } state.bolts--; }
+      const ab = w.abil === "fin" ? (mod("DEX") >= mod("STR") ? "DEX" : "STR") : w.abil;
+      const dmg = c === "alt" ? w.alt.dmg : w.dmg;
+      rollAttack({ title: w.name + (c === "alt" ? " (two-handed)" : ""), bonus: mod(ab) + PROF, dmg, flat: w.flatDmg ? w.flatDmg + mod(ab) : mod(ab), weapon: true, sub: w.ammo ? `${state.bolts} bolts left` : "" });
+      if (w.ammo) commit();
+      break;
+    }
+    case "cantrip": quickCantrip(b); break;
+    case "cast": openCast(b); break;
+    case "filter": spellFilter = b; renderSpells(); break;
+    case "role": roleFilter = b; renderSpells(); break;
+    case "spView": spellView = b; try { localStorage.setItem("thrandir-spellview", b); } catch (e) {} renderSpells(); break;
+    case "spOpen": openSpells.has(b) ? openSpells.delete(b) : openSpells.add(b); renderSpells(); break;
+    case "hunger": {
+      const dr = rollSpecs([{ n: 2, d: 6, t: b }]);
+      addEntry({ title: `Hunger of Hadar: ${b}`, sub: b === "cold" ? "Starts its turn inside" : "Ends its turn inside, DEX save DC " + SPELL_DC, nums: [{ v: dr.total, l: b + " damage", cls: "dm" }], det: fmtParts(dr.parts), note: b === "acid" ? "No damage on a successful save." : "" });
+      break;
+    }
+    case "evards": { const dr = rollSpecs([{ n: 3, d: 6, t: "bludgeoning" }]); addEntry({ title: "Evard's Black Tentacles", nums: [{ v: dr.total, l: "bludgeoning", cls: "dm" }], det: fmtParts(dr.parts) }); break; }
+    case "confusion": {
+      const r = d(10);
+      let note;
+      if (r === 1) { const dir = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"][d(8) - 1]; note = `Moves its full speed in a random direction (<b>${dir}</b>) and takes no action.`; }
+      else if (r <= 6) note = "Doesn't move or take actions this turn.";
+      else if (r <= 8) note = "Uses its action to make a melee attack against a random creature in reach. If none, it does nothing.";
+      else note = "Acts and moves normally.";
+      addEntry({ title: "Confusion behaviour", nums: [{ v: r, l: "d10" }], note });
+      break;
+    }
+    case "check": rollCheck(ABIL_NAMES[b] + " check", b, mod(b)); break;
+    case "save": rollSave(b); break;
+    case "skill": { const s = SKILLS.find(x => x[0] === b); rollCheck(b, s[1], skillMod(b, s[1], s[2]), { sub: s[1] + (astralProf(b) ? " · Astral Knowledge" : "") }); break; }
+    case "rollRaw": rollFree(el.dataset.expr, el.dataset.title); break;
+    case "rollExpr": { const v = document.getElementById("expr").value.trim(); if (v) rollFree(v); break; }
+    case "clearExpr": document.getElementById("expr").value = ""; break;
+    case "clearLog": logEntries = []; logActions.clear(); renderLog(); break;
+    case "bolts": state.bolts = Math.max(0, state.bolts + +b); commit(); break;
+    case "tray": document.getElementById("tray").classList.toggle("open"); break;
+    case "resetAsk":
+      if (!resetArmed) { resetArmed = true; renderInv(); setTimeout(() => { resetArmed = false; renderInv(); }, 4000); }
+      else { resetArmed = false; state = DEFAULT_STATE(); addEntry({ title: "Sheet reset" }); commit(); }
+      break;
+  }
+});
+document.addEventListener("change", ev => {
+  const t = ev.target;
+  if (t.dataset.coin) { state.coins[t.dataset.coin] = Math.max(0, parseInt(t.value, 10) || 0); commit(); }
+  if (t.id === "astralSel") { state.astral = t.value; commit(); }
+  if (t.id === "maxHpIn") { const v = parseInt(t.value, 10); if (v > 0) { state.maxHp = v; state.hp = Math.min(state.hp, v); commit(); } }
+});
+document.getElementById("notes").addEventListener("input", ev => { state.notes = ev.target.value; persist(); });
+document.getElementById("expr").addEventListener("keydown", ev => { if (ev.key === "Enter") { const v = ev.target.value.trim(); if (v) rollFree(v); } });
+document.getElementById("hpAmt").addEventListener("keydown", ev => { if (ev.key === "Enter") document.querySelector('[data-act="damage"]').click(); });
+document.addEventListener("keydown", ev => { if (ev.key === "Escape") { closeModal(); document.getElementById("tray").classList.remove("open"); } });
+
+try { const t = localStorage.getItem("thrandir-tab"); if (t) document.querySelector(`[data-tab="${t}"]`)?.click(); } catch (e) {}
+connectStore();
+</script>
+
+</body>
+</html>
